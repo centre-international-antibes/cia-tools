@@ -1,0 +1,90 @@
+/* ══════════════════════════════════════════════════════
+   Design Tokens — CIA TOOLS
+
+   TWO-TIER SYSTEM
+   ───────────────
+   @theme {}  → Tailwind generates utility classes.
+               Use as plain classes: text-h2, bg-cia-blue, max-w-container.
+
+   :root {}   → CSS custom properties only, no Tailwind utilities.
+               Use in templates with v4 variable shorthand:
+                 py-(--section-padding-block)
+                 left-(--scroll-indicator-left)
+               Use in scoped CSS with var():
+                 font-size: var(--text-ghost-hero);
+
+   v4 VARIABLE SHORTHAND
+   ─────────────────────
+   utility-(--css-var)  is the Tailwind v4 syntax for passing
+   a CSS custom property to any utility — no var() wrapper needed.
+   Example: py-(--section-padding-block)  compiles to
+            padding-block: var(--section-padding-block).
+   ══════════════════════════════════════════════════════ */
+
+/* Non-Tailwind constants — JS / scoped CSS only */
+:root {
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --stagger:   0.08s;
+}
+
+/* ── Static design tokens → Tailwind utilities ───────── */
+@theme {
+  /* Colors
+     bg-cia-blue, text-cia-blue, border-cia-blue … */
+  --color-cia-blue:    #11263b;
+  --color-ink:         #1C1C1A;
+  --color-ink-muted:   #3A3A38;
+  --color-surface:     #F6F3EF;
+  --color-surface-alt: #EBE8E4;
+
+  /* Font families (--font-* namespace → font-* utilities)
+     font-display, font-ui, font-body
+     Note: @utility in main.css also bundles tracking/leading. */
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  /* Type scale — fluid custom sizes (--text-* namespace → text-* utilities)
+     text-display, text-h1, text-h2, text-h3, text-stat, text-hero, text-hero-mobile, text-expertises
+     For all other sizes use standard Tailwind:
+       text-base (1rem) · text-lg (1.125rem) · text-sm (0.875rem) · text-xs (0.75rem) */
+  --text-display:      clamp(3rem, 5vw, 4.5rem);
+  --text-h1:           clamp(2.5rem, 4vw, 3.5rem);
+  --text-h2:           clamp(1.75rem, 3vw, 2.5rem);
+  --text-h3:           clamp(1.25rem, 2vw, 1.5rem);
+  --text-hero:         clamp(2.25rem, 4.5vw, 4rem);
+  --text-hero-mobile:  clamp(2rem, 9vw, 3.25rem);
+
+  /* Letter spacing (--tracking-* namespace → tracking-* utilities)
+     tracking-display, tracking-label, tracking-tight, tracking-tighter */
+  --tracking-display: 0em;
+  --tracking-label:   0.05em;
+  --tracking-tight:   -0.01em;
+  --tracking-tighter: -0.02em;
+
+  /* Line heights (--leading-* namespace → leading-* utilities)
+     leading-display, leading-heading, leading-heading-tight, leading-quote, leading-body */
+  --leading-display:       1.1;
+  --leading-heading:       1.2;
+  --leading-heading-tight: 1.15;
+  --leading-quote:         1.35;
+  --leading-body:          1.65;
+
+  /* Border radius (--radius-* namespace → rounded-* utilities)
+     rounded-card, rounded-icon */
+  --radius-card: 1.25rem;
+  --radius-icon: 0.875rem;
+
+  /* Max widths (--container-* namespace → max-w-* utilities)
+     max-w-container, max-w-reading, max-w-article, max-w-hero */
+  --container-container: 80rem;   /* max-w-container = 1280px */
+  --container-reading:   47.5rem; /* max-w-reading   =  760px */
+  --container-article:   65rem;   /* max-w-article   = 1040px */
+  --container-hero:      90rem;   /* max-w-hero      = 1440px */
+}
+
+/* ── Derived colors (runtime color-mix, @theme inline) ── */
+/* @theme inline tells Tailwind: "use this CSS variable as-is, */
+/* the value is computed by the browser at runtime."          */
+@theme inline {
+  --color-cia-blue-dark: color-mix(in srgb, var(--color-cia-blue) 90%, #000 10%);
+  --color-gold-dark: color-mix(in srgb, var(--color-gold) 90%, #000 10%);
+}

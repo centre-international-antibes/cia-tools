@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Home"
+  },
+  "footer": {
+    "tagline": "Tailored development tools for business teams",
+    "nav": "Navigation",
+    "contact": "Contact",
+    "legal": "Legal notice",
+    "privacy": "Privacy policy",
+    "copyright": "© {year} Centre International d'Antibes. All rights reserved.",
+    "email": "contact{'@'}cia-france.com",
+    "linkedin": "LinkedIn",
+    "linkedinHref": "https://www.linkedin.com/company/centre-international-d-antibes/",
+    "skipToContent": "Skip to main content"
+  },
+  "a11y": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation"
+  },
+  "cookieConsent": {
+    "banner": {
+      "title": "We use cookies",
+      "description": "This site uses cookies to improve the user experience and analyze traffic.",
+      "rejectAll": "Reject all",
+      "customize": "Customize",
+      "acceptAll": "Accept all",
+      "required": "Required"
+    },
+    "info": {
+      "title": "Information on consent",
+      "lastUpdated": "Last updated",
+      "version": "Version",
+      "privacyPolicy": "Privacy policy",
+      "privacyPolicyLink": "/privacy-policy",
+      "cookiePolicy": "Cookie policy"
+    },
+    "modal": {
+      "greeting": "Hello!",
+      "title": "Manage your cookie preferences",
+      "description": "Choose the categories of cookies to accept or reject.",
+      "settingsTitle": "Cookie settings",
+      "settingsDescription": "Customize your preferences for each category of cookies.",
+      "nothanks": "No thanks",
+      "customize": "Save",
+      "acceptButton": "Accept all",
+      "acceptAll": "Accept all",
+      "rejectAll": "Reject all"
+    },
+    "notifications": {
+      "preferencesSaved": "Preferences saved",
+      "preferencesSavedDescription": "Your cookie preferences have been updated successfully.",
+      "allAccepted": "All cookies accepted",
+      "allAcceptedDescription": "You have accepted all categories of cookies.",
+      "allRejected": "Non-essential cookies rejected",
+      "allRejectedDescription": "You have rejected all non-essential cookies.",
+      "preferencesReset": "Preferences reset",
+      "preferencesResetDescription": "Your cookie preferences have been reset to the default values."
+    },
+    "settings": {
+      "title": "Cookie settings",
+      "description": "Manage your cookie preferences at any time. Choose the categories of cookies to accept or reject.",
+      "saveChanges": "Save changes",
+      "resetToDefaults": "Reset to defaults"
+    },
+    "categories": {
+      "examples": "e.g.,",
+      "essential": {
+        "title": "Essential",
+        "description": "Cookies necessary for the website to function properly.",
+        "examples": "Session cookies, security cookies"
+      },
+      "functional": {
+        "title": "Functional",
+        "description": "Cookies that enable advanced features and personalization.",
+        "examples": "Language preference, saved settings"
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "Cookies that help us understand how visitors interact with the site.",
+        "examples": "Google Analytics, Hotjar"
+      },
+      "marketing": {
+        "title": "Marketing",
+        "description": "Cookies used to deliver more relevant advertisements based on your interests.",
+        "examples": "Facebook Pixel, Google Ads"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "description": "Cookies used to remember your preferences on the site.",
+        "examples": "Theme, language, cookie choices"
+      }
+    }
+  },
+  "form": {
+    "nom": "Last name",
+    "prenom": "First name",
+    "entreprise": "Company",
+    "persona": "Your profile",
+    "message": "Your message",
+    "submit": "Send message",
+    "submitting": "Sending…",
+    "placeholder": {
+      "nom": "Smith",
+      "prenom": "Marie",
+      "entreprise": "My company (optional)",
+      "message": "Describe your project or need in a few lines…"
+    },
+    "error": {
+      "nom": "Minimum 2 characters",
+      "prenom": "Minimum 2 characters",
+      "message": "Minimum 10 characters"
+    },
+    "success": {
+      "heading": "Message sent",
+      "body": "We have received your message and will get back to you within 24h."
+    }
+  }
+}

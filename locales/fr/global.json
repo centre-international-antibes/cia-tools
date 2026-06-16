@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Accueil"
+  },
+  "footer": {
+    "tagline": "Outils de développement sur mesure pour les équipes métier",
+    "nav": "Navigation",
+    "contact": "Contact",
+    "legal": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "copyright": "© {year} Centre International d'Antibes. Tous droits réservés.",
+    "email": "contact{'@'}cia-france.com",
+    "linkedin": "LinkedIn",
+    "linkedinHref": "https://www.linkedin.com/company/centre-international-d-antibes/",
+    "skipToContent": "Aller au contenu principal"
+  },
+  "a11y": {
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "mainNav": "Navigation principale"
+  },
+  "cookieConsent": {
+    "banner": {
+      "title": "Nous utilisons des cookies",
+      "description": "Ce site utilise des cookies pour améliorer l'expérience utilisateur et analyser le trafic.",
+      "rejectAll": "Tout refuser",
+      "customize": "Personnaliser",
+      "acceptAll": "Tout accepter",
+      "required": "Obligatoire"
+    },
+    "info": {
+      "title": "Informations sur le consentement",
+      "lastUpdated": "Dernière mise à jour",
+      "version": "Version",
+      "privacyPolicy": "Politique de confidentialité",
+      "privacyPolicyLink": "/privacy-policy",
+      "cookiePolicy": "Politique de cookies"
+    },
+    "modal": {
+      "greeting": "Bonjour !",
+      "title": "Gérez vos préférences de cookies",
+      "description": "Choisissez les catégories de cookies à accepter ou refuser.",
+      "settingsTitle": "Paramètres des cookies",
+      "settingsDescription": "Personnalisez vos préférences pour chaque catégorie de cookies.",
+      "nothanks": "Non merci",
+      "customize": "Sauvegarder",
+      "acceptButton": "Accepter tout",
+      "acceptAll": "Tout accepter",
+      "rejectAll": "Tout refuser"
+    },
+    "notifications": {
+      "preferencesSaved": "Préférences enregistrées",
+      "preferencesSavedDescription": "Vos préférences de cookies ont été mises à jour avec succès.",
+      "allAccepted": "Tous les cookies acceptés",
+      "allAcceptedDescription": "Vous avez accepté toutes les catégories de cookies.",
+      "allRejected": "Cookies non essentiels refusés",
+      "allRejectedDescription": "Vous avez refusé tous les cookies non essentiels.",
+      "preferencesReset": "Préférences réinitialisées",
+      "preferencesResetDescription": "Vos préférences de cookies ont été réinitialisées aux valeurs par défaut."
+    },
+    "settings": {
+      "title": "Paramètres des cookies",
+      "description": "Gérez vos préférences de cookies à tout moment. Choisissez les catégories de cookies à accepter ou refuser.",
+      "saveChanges": "Enregistrer les modifications",
+      "resetToDefaults": "Réinitialiser les paramètres par défaut"
+    },
+    "categories": {
+      "examples": "ex.",
+      "essential": {
+        "title": "Essentiels",
+        "description": "Cookies nécessaires au bon fonctionnement du site.",
+        "examples": "Cookies de session, cookies de sécurité"
+      },
+      "functional": {
+        "title": "Fonctionnels",
+        "description": "Cookies permettant des fonctionnalités avancées et la personnalisation.",
+        "examples": "Préférence de langue, paramètres enregistrés"
+      },
+      "analytics": {
+        "title": "Analytiques",
+        "description": "Cookies qui nous aident à comprendre comment les visiteurs interagissent avec le site.",
+        "examples": "Google Analytics, Hotjar"
+      },
+      "marketing": {
+        "title": "Marketing",
+        "description": "Cookies utilisés pour proposer des publicités plus pertinentes selon vos intérêts.",
+        "examples": "Facebook Pixel, Google Ads"
+      },
+      "preferences": {
+        "title": "Préférences",
+        "description": "Cookies utilisés pour mémoriser vos préférences sur le site.",
+        "examples": "Thème, langue, choix des cookies"
+      }
+    }
+  },
+  "form": {
+    "nom": "Nom",
+    "prenom": "Prénom",
+    "entreprise": "Entreprise",
+    "persona": "Votre profil",
+    "message": "Votre message",
+    "submit": "Envoyer le message",
+    "submitting": "Envoi en cours…",
+    "placeholder": {
+      "nom": "Dupont",
+      "prenom": "Marie",
+      "entreprise": "Mon entreprise (optionnel)",
+      "message": "Décrivez votre projet ou votre besoin en quelques lignes…"
+    },
+    "error": {
+      "nom": "Minimum 2 caractères",
+      "prenom": "Minimum 2 caractères",
+      "message": "Minimum 10 caractères"
+    },
+    "success": {
+      "heading": "Message envoyé",
+      "body": "Nous avons bien reçu votre message et vous recontacterons sous 24h."
+    }
+  }
+}
