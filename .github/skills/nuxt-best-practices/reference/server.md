@@ -515,11 +515,11 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const token = generateToken(user.id)
+  const token = generateToken(user.sub)
 
   return {
     user: {
-      id: user.id,
+      id: user.sub,
       email: user.email,
       name: user.name
     },

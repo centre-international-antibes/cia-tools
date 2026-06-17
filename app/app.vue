@@ -31,12 +31,14 @@ if (import.meta.client) {
 </script>
 <template>
   <div>
-    <NuxtLoadingIndicator color="#8FE1D8" />
-    <NuxtLayout>
-      <NuxtPage />
-      <LazyCookieConsentBanner />
-      <LazyCookieConsentModal />
-      <LazyCookieSettingsButton position="bottom-right" />
-    </NuxtLayout>
+    <TooltipProvider :delay-duration="300">
+      <NuxtLoadingIndicator color="#8FE1D8" />
+      <NuxtLayout>
+        <NuxtPage />
+        <LazyCookieConsentBanner />
+        <LazyCookieConsentModal />
+        <LazyCookieSettingsButton position="bottom-right" />
+      </NuxtLayout>
+    </TooltipProvider>
   </div>
 </template>

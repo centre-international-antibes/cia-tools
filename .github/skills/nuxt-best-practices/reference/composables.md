@@ -423,8 +423,8 @@ Combine multiple composables for complex functionality.
 ```typescript
 export const useUserDashboard = () => {
   const { user } = useAuth()
-  const { data: profile } = useUserProfile(user.value?.id)
-  const { items: notifications } = useNotifications(user.value?.id)
+  const { data: profile } = useUserProfile(user.value?.sub)
+  const { items: notifications } = useNotifications(user.value?.sub)
   const { theme, toggleTheme } = useTheme()
 
   const dashboardData = computed(() => ({

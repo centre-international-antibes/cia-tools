@@ -82,22 +82,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       ga4Id: process.env.GA4_ID || '',
-      supabase: {
-        url: process.env.SUPABASE_URL || '',
-        key: process.env.SUPABASE_KEY || '',
-      }
     },
   },
 
   // ── Nuxt Supabase ───────────────────────────────────
   supabase: {
-    redirectOptions: {
-      login: '/login',
-      callback: '/confirm',
-      include: undefined,
-      exclude: ['/', '/register', '/forgot-password', '/legal', '/privacy-policy', '/terms-of-service'],
-      saveRedirectToCookie: false,
-    }
+    redirect: false,
   },
 
   // ── Shadcn Nuxt ───────────────────────────────────────
