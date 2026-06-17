@@ -1,0 +1,204 @@
+{
+  "campaigns": {
+    "title": "Campagnes d'emails",
+    "subtitle": "Préparez, validez et envoyez des campagnes transactionnelles.",
+    "accessDenied": "Accès restreint",
+    "accessDeniedDescription": "Vous n'avez aucun accès campagne. Contactez un administrateur.",
+    "backToDashboard": "Retour au tableau de bord",
+    "backToList": "Retour aux campagnes",
+    "backToKind": "Retour au type de campagne",
+    "newCampaign": "Nouvelle campagne",
+    "kinds": {
+      "ats": {
+        "label": "Relance ATS",
+        "description": "Autorisations de sortie : informations manquantes, fiche ATS, hébergement."
+      },
+      "ats_late_arrival": {
+        "label": "ATS - Arrivée tardive",
+        "description": "Instructions S-1 pour les arrivées tardives (Aragon)."
+      },
+      "thanks_direct": {
+        "label": "Remerciement DIRECT",
+        "description": "Remerciement post-séjour clients DIRECT (juniors/adultes)."
+      },
+      "test_fr": {
+        "label": "Relance tests FR",
+        "description": "Tests de niveau de français en ligne pour les adultes."
+      },
+      "housing_confirmation": {
+        "label": "Confirmation d'hébergement",
+        "description": "Informations sur la résidence et numéros utiles."
+      },
+      "course_location": {
+        "label": "Lieu de cours adultes",
+        "description": "Heure et lieu des cours (Le Port)."
+      },
+      "welcome_pack": {
+        "label": "Welcome pack",
+        "description": "Mail de bienvenue J-3 (clients DIRECT uniquement)."
+      },
+      "payment_reminder": {
+        "label": "Relance solde",
+        "description": "Relance de paiement avec génération de lien Payzen."
+      }
+    },
+    "upload": {
+      "title": "Importer une liste",
+      "description": "Le fichier doit être un export Matrix ou Payzen au format CSV ou Excel. Les en-têtes français (Nom, Hébergement, Sem. Arr.…) sont reconnus automatiquement.",
+      "name": "Nom de la liste",
+      "namePlaceholder": "Semaine du 24 juin",
+      "file": "Fichier",
+      "fileHelp": ".csv, .xlsx ou .xls — 25 Mo max.",
+      "submit": "Importer",
+      "warningsTitle": "Avertissements lors de l'import",
+      "success": "Liste importée ({count} contacts).",
+      "error": "Erreur lors de l'import.",
+      "summary": {
+        "total": "lignes",
+        "accepted": "à contacter",
+        "suppressed": "exclues par défaut",
+        "skipped": "ignorées",
+        "duplicates": "doublons",
+        "invalid": "emails invalides"
+      }
+    },
+    "lists": {
+      "title": "Listes importées",
+      "description": "Sélectionnez une liste existante ou importez-en une nouvelle.",
+      "empty": "Aucune liste importée pour ce type.",
+      "name": "Nom",
+      "rows": "Lignes",
+      "uploadedAt": "Importé le"
+    },
+    "contacts": {
+      "title": "Contacts",
+      "selected": "{selected} / {total} sélectionnés",
+      "search": "Rechercher email ou nom…",
+      "email": "Email",
+      "name": "Nom",
+      "lang": "Langue",
+      "flags": "Indicateurs",
+      "empty": "Aucun contact ne correspond.",
+      "suppressed": "à exclure",
+      "suppressedCount": "{count} exclu(s) par défaut",
+      "showSuppressed": "Afficher les exclus"
+    },
+    "templates": {
+      "manage": "Gérer les modèles",
+      "create": "Nouveau modèle",
+      "createError": "Impossible de créer le modèle.",
+      "titleFor": "Modèles - {kind}",
+      "pickTitle": "Choisir un modèle",
+      "pickDescription": "Seuls les modèles actifs sont utilisables.",
+      "empty": "Aucun modèle disponible. Créez-en un.",
+      "name": "Nom",
+      "variant": "Variante",
+      "lang": "Langue",
+      "status": "Statut",
+      "description": "Description",
+      "ready": "Prêt",
+      "noVersion": "Sans version",
+      "active": "Active",
+      "savedActive": "Nouvelle version sauvegardée et activée.",
+      "saveError": "Impossible de sauvegarder le modèle.",
+      "versionsTitle": "Historique des versions",
+      "versionsCount": "version(s)",
+      "createdAt": "Créée le",
+      "backToList": "Retour aux modèles",
+      "editor": {
+        "title": "Éditeur MJML",
+        "description": "MJML à gauche, aperçu à droite. Les variables Handlebars sont acceptées : {'{{'}first_name{'}}'}.",
+        "subject": "Objet de l'email",
+        "mjml": "Code MJML",
+        "variables": "Variables disponibles",
+        "addVariable": "Ajouter",
+        "key": "clé",
+        "required": "requis",
+        "sample": "exemple de valeur",
+        "preview": "Aperçu",
+        "saveActivate": "Sauvegarder et activer"
+      }
+    },
+    "preview": {
+      "title": "Aperçu",
+      "description": "Rendu avec les valeurs d'exemple du schéma de variables.",
+      "subject": "Objet",
+      "missingTitle": "Variables manquantes",
+      "errorTitle": "Erreur de rendu",
+      "empty": "Cliquez sur Aperçu pour générer un rendu."
+    },
+    "testSend": {
+      "button": "Envoyer un test",
+      "title": "Envoyer un email de test",
+      "description": "L'email de test ne compte pas dans les statistiques d'une campagne.",
+      "recipient": "Destinataire",
+      "recipientHelp": "Par défaut, votre adresse de connexion. Vous pouvez en saisir une autre.",
+      "send": "Envoyer",
+      "success": "Email de test envoyé",
+      "successDescription": "Envoyé à {email}.",
+      "failure": "Échec de l'envoi du test."
+    },
+    "wizard": {
+      "title": "Nouvelle campagne - {kind}",
+      "subtitle": "Suivez les étapes pour préparer, valider et envoyer la campagne.",
+      "campaignName": "Nom de la campagne",
+      "notes": "Notes (interne)",
+      "pickListFirst": "Sélectionnez d'abord une liste.",
+      "pickContacts": "Sélectionnez au moins un contact.",
+      "pickTemplate": "Choisissez un modèle avec une version active.",
+      "error": "Une erreur est survenue.",
+      "steps": {
+        "list": "Liste",
+        "contacts": "Contacts",
+        "template": "Modèle",
+        "review": "Récapitulatif"
+      }
+    },
+    "review": {
+      "title": "Récapitulatif",
+      "description": "Vérifiez les informations avant l'envoi.",
+      "kind": "Type",
+      "recipients": "Destinataires",
+      "name": "Nom de la campagne"
+    },
+    "send": {
+      "button": "Envoyer la campagne",
+      "confirmTitle": "Confirmer l'envoi",
+      "confirmDescription": "Vous allez envoyer un email à {count} destinataire(s). Cette action est irréversible.",
+      "confirmWarning": "L'envoi est placé en file et traité en arrière-plan. Vous pourrez suivre le statut sur la page de la campagne.",
+      "confirm": "Confirmer et envoyer",
+      "queued": "Campagne placée en file d'envoi.",
+      "error": "Impossible de démarrer l'envoi."
+    },
+    "abort": {
+      "button": "Annuler la campagne",
+      "success": "Campagne annulée.",
+      "error": "Impossible d'annuler la campagne."
+    },
+    "detail": {
+      "sent": "envoyés",
+      "failed": "échec(s)"
+    },
+    "recipients": {
+      "title": "Destinataires",
+      "email": "Email",
+      "status": "Statut",
+      "attempts": "Essais",
+      "sentAt": "Envoyé le",
+      "lastEventAt": "Dernier événement",
+      "error": "Erreur",
+      "empty": "Aucun destinataire."
+    },
+    "history": {
+      "title": "Historique",
+      "description": "Toutes les campagnes précédentes pour ce type.",
+      "empty": "Aucune campagne pour le moment.",
+      "name": "Nom",
+      "status": "Statut",
+      "recipients": "Destinataires",
+      "sent": "Envoyés",
+      "failed": "Échec(s)",
+      "createdAt": "Créée le"
+    }
+  }
+}

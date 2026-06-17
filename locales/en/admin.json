@@ -1,0 +1,48 @@
+{
+  "dashboard": {
+    "welcome": "Welcome, {name}",
+    "subtitle": "Here's an overview of your account.",
+    "role": "Role",
+    "scopes": "Access",
+    "noScopes": "No specific access",
+    "account": "Account"
+  },
+  "admin": {
+    "title": "Users",
+    "subtitle": "Manage user accounts and their permissions.",
+    "createUser": "Create user",
+    "editUser": "Edit user",
+    "deleteUser": "Delete user",
+    "createUserDescription": "Create a new user account with a role and permissions.",
+    "editUserDescription": "Update this user's role and permissions.",
+    "deleteConfirm": "Are you sure you want to delete {email}? This action cannot be undone.",
+    "colName": "Name",
+    "colEmail": "Email",
+    "colRole": "Role",
+    "colScopes": "Access",
+    "colCreated": "Created",
+    "colActions": "Actions",
+    "namePlaceholder": "John Smith",
+    "emailPlaceholder": "john{'@'}cia-france.com",
+    "passwordPlaceholder": "Minimum 8 characters",
+    "noUsers": "No users found.",
+    "saveError": "An error occurred while saving.",
+    "deleteError": "An error occurred while deleting.",
+    "fetchError": "Failed to load users.",
+    "createSuccess": "User created successfully.",
+    "updateSuccess": "User updated.",
+    "deleteSuccess": "User deleted."
+  },
+  "email": {
+    "title": "Emails",
+    "subtitle": "Manage your email campaigns and follow-ups.",
+    "accessDenied": "Restricted access",
+    "accessDeniedDescription": "You don't have the required permissions to access this section. Contact an administrator.",
+    "backToDashboard": "Back to dashboard",
+    "relanceAts": "ATS Follow-up",
+    "relanceAtsDescription": "Send follow-up emails to candidates tracked in the ATS.",
+    "relanceAtsEmpty": "No follow-ups in progress",
+    "relanceAtsEmptyDescription": "ATS follow-ups you create will appear here.",
+    "newRelance": "New follow-up"
+  }
+}

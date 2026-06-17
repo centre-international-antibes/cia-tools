@@ -1,0 +1,204 @@
+{
+  "campaigns": {
+    "title": "Email campaigns",
+    "subtitle": "Prepare, validate and send transactional campaigns.",
+    "accessDenied": "Restricted access",
+    "accessDeniedDescription": "You don't have any campaign access. Contact an administrator.",
+    "backToDashboard": "Back to dashboard",
+    "backToList": "Back to campaigns",
+    "backToKind": "Back to campaign type",
+    "newCampaign": "New campaign",
+    "kinds": {
+      "ats": {
+        "label": "ATS reminder",
+        "description": "Sortie authorisations: missing info, ATS form, housing."
+      },
+      "ats_late_arrival": {
+        "label": "ATS - Late arrival",
+        "description": "S-1 instructions for late arrivals (Aragon)."
+      },
+      "thanks_direct": {
+        "label": "DIRECT thanks",
+        "description": "Post-stay thank-you for DIRECT customers (juniors/adults)."
+      },
+      "test_fr": {
+        "label": "French test reminder",
+        "description": "Online French level test for adult learners."
+      },
+      "housing_confirmation": {
+        "label": "Housing confirmation",
+        "description": "Residence info and useful phone numbers."
+      },
+      "course_location": {
+        "label": "Adult course location",
+        "description": "Time and venue of courses (Le Port)."
+      },
+      "welcome_pack": {
+        "label": "Welcome pack",
+        "description": "J-3 welcome email (DIRECT customers only)."
+      },
+      "payment_reminder": {
+        "label": "Balance reminder",
+        "description": "Payment reminder with Payzen link generation."
+      }
+    },
+    "upload": {
+      "title": "Import a list",
+      "description": "File must be a Matrix or Payzen export (CSV or Excel). French headers (Nom, Hébergement, Sem. Arr.…) are recognized automatically.",
+      "name": "List name",
+      "namePlaceholder": "Week of 24 June",
+      "file": "File",
+      "fileHelp": ".csv, .xlsx or .xls — 25 MB max.",
+      "submit": "Import",
+      "warningsTitle": "Import warnings",
+      "success": "List imported ({count} contacts).",
+      "error": "Import failed.",
+      "summary": {
+        "total": "rows",
+        "accepted": "contactable",
+        "suppressed": "excluded by default",
+        "skipped": "skipped",
+        "duplicates": "duplicates",
+        "invalid": "invalid emails"
+      }
+    },
+    "lists": {
+      "title": "Imported lists",
+      "description": "Pick an existing list or upload a new one.",
+      "empty": "No list imported for this kind yet.",
+      "name": "Name",
+      "rows": "Rows",
+      "uploadedAt": "Uploaded at"
+    },
+    "contacts": {
+      "title": "Contacts",
+      "selected": "{selected} / {total} selected",
+      "search": "Search email or name…",
+      "email": "Email",
+      "name": "Name",
+      "lang": "Language",
+      "flags": "Flags",
+      "empty": "No contact matches.",
+      "suppressed": "do not send",
+      "suppressedCount": "{count} excluded by default",
+      "showSuppressed": "Show excluded"
+    },
+    "templates": {
+      "manage": "Manage templates",
+      "create": "New template",
+      "createError": "Failed to create template.",
+      "titleFor": "Templates - {kind}",
+      "pickTitle": "Pick a template",
+      "pickDescription": "Only templates with an active version can be used.",
+      "empty": "No template available. Create one.",
+      "name": "Name",
+      "variant": "Variant",
+      "lang": "Language",
+      "status": "Status",
+      "description": "Description",
+      "ready": "Ready",
+      "noVersion": "No version",
+      "active": "Active",
+      "savedActive": "New version saved and activated.",
+      "saveError": "Failed to save template.",
+      "versionsTitle": "Version history",
+      "versionsCount": "version(s)",
+      "createdAt": "Created at",
+      "backToList": "Back to templates",
+      "editor": {
+        "title": "MJML editor",
+        "description": "MJML on the left, preview on the right. Handlebars variables are supported: {'{{'}first_name{'}}'}.",
+        "subject": "Email subject",
+        "mjml": "MJML source",
+        "variables": "Template variables",
+        "addVariable": "Add",
+        "key": "key",
+        "required": "required",
+        "sample": "sample value",
+        "preview": "Preview",
+        "saveActivate": "Save and activate"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "description": "Rendered with the sample values from the variables schema.",
+      "subject": "Subject",
+      "missingTitle": "Missing variables",
+      "errorTitle": "Render error",
+      "empty": "Click Preview to render."
+    },
+    "testSend": {
+      "button": "Send test",
+      "title": "Send a test email",
+      "description": "Test sends do not count in any campaign statistics.",
+      "recipient": "Recipient",
+      "recipientHelp": "Defaults to your account email. You can override it.",
+      "send": "Send",
+      "success": "Test email sent",
+      "successDescription": "Sent to {email}.",
+      "failure": "Test send failed."
+    },
+    "wizard": {
+      "title": "New campaign - {kind}",
+      "subtitle": "Follow the steps to prepare, validate and send the campaign.",
+      "campaignName": "Campaign name",
+      "notes": "Notes (internal)",
+      "pickListFirst": "Pick a list first.",
+      "pickContacts": "Select at least one contact.",
+      "pickTemplate": "Pick a template with an active version.",
+      "error": "Something went wrong.",
+      "steps": {
+        "list": "List",
+        "contacts": "Contacts",
+        "template": "Template",
+        "review": "Review"
+      }
+    },
+    "review": {
+      "title": "Review",
+      "description": "Double-check before sending.",
+      "kind": "Kind",
+      "recipients": "Recipients",
+      "name": "Campaign name"
+    },
+    "send": {
+      "button": "Send campaign",
+      "confirmTitle": "Confirm send",
+      "confirmDescription": "You are about to email {count} recipient(s). This cannot be undone.",
+      "confirmWarning": "The send is queued and processed in the background. Track its status on the campaign page.",
+      "confirm": "Confirm and send",
+      "queued": "Campaign queued.",
+      "error": "Failed to start sending."
+    },
+    "abort": {
+      "button": "Abort campaign",
+      "success": "Campaign aborted.",
+      "error": "Failed to abort campaign."
+    },
+    "detail": {
+      "sent": "sent",
+      "failed": "failed"
+    },
+    "recipients": {
+      "title": "Recipients",
+      "email": "Email",
+      "status": "Status",
+      "attempts": "Attempts",
+      "sentAt": "Sent at",
+      "lastEventAt": "Last event",
+      "error": "Error",
+      "empty": "No recipient."
+    },
+    "history": {
+      "title": "History",
+      "description": "All past campaigns for this type.",
+      "empty": "No campaign yet.",
+      "name": "Name",
+      "status": "Status",
+      "recipients": "Recipients",
+      "sent": "Sent",
+      "failed": "Failed",
+      "createdAt": "Created at"
+    }
+  }
+}

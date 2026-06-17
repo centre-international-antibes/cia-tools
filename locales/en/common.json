@@ -1,6 +1,21 @@
 {
   "nav": {
-    "home": "Home"
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "email": "Emails",
+    "campaigns": "Campaigns",
+    "admin": "Administration"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading…",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "refresh": "Refresh"
   },
   "footer": {
     "tagline": "Tailored development tools for business teams",
@@ -18,6 +33,10 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "mainNav": "Main navigation"
+  },
+  "landing": {
+    "description": "Internal tools platform for Centre International d'Antibes teams.",
+    "signIn": "Sign in"
   },
   "cookieConsent": {
     "banner": {

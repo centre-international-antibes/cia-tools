@@ -57,5 +57,15 @@ INSERT INTO auth.identities (
 
 -- Promote to admin
 UPDATE public.profiles
-SET role = 'admin', scopes = '{relance_ats}'
+SET role = 'admin',
+    scopes = scopes || ARRAY[
+        'campaign:ats',
+        'campaign:ats_late_arrival',
+        'campaign:thanks_direct',
+        'campaign:test_fr',
+        'campaign:housing_confirmation',
+        'campaign:course_location',
+        'campaign:welcome_pack',
+        'campaign:payment_reminder'
+    ]
 WHERE id = '00000000-0000-0000-0000-000000000001';

@@ -1,0 +1,48 @@
+{
+  "dashboard": {
+    "welcome": "Bienvenue, {name}",
+    "subtitle": "Voici un aperçu de votre compte.",
+    "role": "Rôle",
+    "scopes": "Accès",
+    "noScopes": "Aucun accès spécifique",
+    "account": "Compte"
+  },
+  "admin": {
+    "title": "Utilisateurs",
+    "subtitle": "Gérez les comptes utilisateurs et leurs permissions.",
+    "createUser": "Créer un utilisateur",
+    "editUser": "Modifier l'utilisateur",
+    "deleteUser": "Supprimer l'utilisateur",
+    "createUserDescription": "Créez un nouveau compte utilisateur avec un rôle et des accès.",
+    "editUserDescription": "Modifiez le rôle et les accès de cet utilisateur.",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {email} ? Cette action est irréversible.",
+    "colName": "Nom",
+    "colEmail": "E-mail",
+    "colRole": "Rôle",
+    "colScopes": "Accès",
+    "colCreated": "Créé le",
+    "colActions": "Actions",
+    "namePlaceholder": "Jean Dupont",
+    "emailPlaceholder": "jean{'@'}cia-france.com",
+    "passwordPlaceholder": "Minimum 8 caractères",
+    "noUsers": "Aucun utilisateur trouvé.",
+    "saveError": "Erreur lors de l'enregistrement.",
+    "deleteError": "Erreur lors de la suppression.",
+    "fetchError": "Impossible de charger les utilisateurs.",
+    "createSuccess": "Utilisateur créé avec succès.",
+    "updateSuccess": "Utilisateur mis à jour.",
+    "deleteSuccess": "Utilisateur supprimé."
+  },
+  "email": {
+    "title": "E-mails",
+    "subtitle": "Gérez vos envois et relances e-mail.",
+    "accessDenied": "Accès restreint",
+    "accessDeniedDescription": "Vous n'avez pas les droits nécessaires pour accéder à cette section. Contactez un administrateur.",
+    "backToDashboard": "Retour au tableau de bord",
+    "relanceAts": "Relance ATS",
+    "relanceAtsDescription": "Envoyez des e-mails de relance aux candidats suivis dans l'ATS.",
+    "relanceAtsEmpty": "Aucune relance en cours",
+    "relanceAtsEmptyDescription": "Les relances ATS que vous créerez apparaîtront ici.",
+    "newRelance": "Nouvelle relance"
+  }
+}

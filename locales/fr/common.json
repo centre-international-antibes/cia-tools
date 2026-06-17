@@ -1,6 +1,21 @@
 {
   "nav": {
-    "home": "Accueil"
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "email": "E-mails",
+    "campaigns": "Campagnes",
+    "admin": "Administration"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement…",
+    "create": "Créer",
+    "back": "Retour",
+    "next": "Suivant",
+    "refresh": "Actualiser"
   },
   "footer": {
     "tagline": "Outils de développement sur mesure pour les équipes métier",
@@ -18,6 +33,10 @@
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
     "mainNav": "Navigation principale"
+  },
+  "landing": {
+    "description": "Plateforme d'outils internes pour les équipes du Centre International d'Antibes.",
+    "signIn": "Se connecter"
   },
   "cookieConsent": {
     "banner": {

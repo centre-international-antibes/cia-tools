@@ -2,19 +2,10 @@ export default defineNuxtRouteMiddleware(async () => {
   const user = useSupabaseUser();
   const localePath = useLocalePath();
 
-  if (!user.value) {
-    return navigateTo(localePath('/login'));
-  }
+  if (!user.value) return navigateTo(localePath('/login'));
 
-  const client = useSupabaseClient();
+  const { ensureLoaded, isAdmin } = useUserProfile();
+  await ensureLoaded();
 
-  const { data } = await client
-    .from('profiles')
-    .select('role')
-    .eq('id', user.value.id)
-    .single();
-
-  if (data?.role !== 'admin') {
-    return navigateTo(localePath('/dashboard'));
-  }
+  if (!isAdmin.value) return navigateTo(localePath('/dashboard'));
 });

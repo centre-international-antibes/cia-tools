@@ -66,8 +66,18 @@ export default defineNuxtConfig({
   // ── Nuxt i18n ────────────────────────────────────────
   i18n: {
     locales: [
-      { code: 'fr', language: 'fr-FR', name: 'Français', files: ['fr/global.json'] },
-      { code: 'en', language: 'en-GB', name: 'English', files: ['en/global.json'] },
+      {
+        code: 'fr',
+        language: 'fr-FR',
+        name: 'Français',
+        files: ['fr/common.json', 'fr/auth.json', 'fr/admin.json', 'fr/campaigns.json'],
+      },
+      {
+        code: 'en',
+        language: 'en-GB',
+        name: 'English',
+        files: ['en/common.json', 'en/auth.json', 'en/admin.json', 'en/campaigns.json'],
+      },
     ],
     defaultLocale: 'fr',
     strategy: 'prefix_except_default',
@@ -80,9 +90,28 @@ export default defineNuxtConfig({
   },
   // ── Runtime Config ────────────────────────────────────
   runtimeConfig: {
+    brevo: {
+      apiKey: process.env.BREVO_API_KEY || '',
+      webhookSecret: process.env.BREVO_WEBHOOK_SECRET || '',
+      senderEmail: process.env.BREVO_SENDER_EMAIL || '',
+      senderName: process.env.BREVO_SENDER_NAME || '',
+      replyTo: process.env.BREVO_REPLY_TO || '',
+    },
+    payzen: {
+      apiUrl: process.env.PAYZEN_API_URL || 'https://api.lyra.com/api-payment/V4',
+      username: process.env.PAYZEN_USERNAME || '',
+      password: process.env.PAYZEN_PASSWORD || '',
+      hmacKey: process.env.PAYZEN_HMAC_KEY || '',
+      returnUrl: process.env.PAYZEN_RETURN_URL || '',
+    },
     public: {
       ga4Id: process.env.GA4_ID || '',
     },
+  },
+
+  // ── Nitro ────────────────────────────────────────────
+  nitro: {
+    experimental: { tasks: true },
   },
 
   // ── Nuxt Supabase ───────────────────────────────────
@@ -100,6 +129,7 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: [
+        '@lucide/vue',
         '@vue/devtools-core',
         '@vue/devtools-kit',
         '@vueuse/core',
@@ -113,4 +143,10 @@ export default defineNuxtConfig({
     typeCheck: false,
   },
 
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false,
+    },
+  ],
 })

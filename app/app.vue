@@ -39,6 +39,7 @@ if (import.meta.client) {
         <LazyCookieConsentModal />
         <LazyCookieSettingsButton position="bottom-right" />
       </NuxtLayout>
+      <Sonner position="top-right" rich-colors close-button />
     </TooltipProvider>
   </div>
 </template>

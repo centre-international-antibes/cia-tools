@@ -1,8 +1,7 @@
 export default defineNuxtRouteMiddleware(() => {
   const user = useSupabaseUser();
-  const localePath = useLocalePath();
+  if (!user.value) return;
 
-  if (user.value) {
-    return navigateTo(localePath('/dashboard'));
-  }
+  const localePath = useLocalePath();
+  return navigateTo(localePath('/dashboard'));
 });
