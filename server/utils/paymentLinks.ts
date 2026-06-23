@@ -21,16 +21,36 @@ export async function ensurePaymentLinkForContact(
     currency?: string;
     language?: 'fr' | 'en';
     expiresAt?: Date;
+    /** Reuse keys: same proforma + amount across reminders → same link. */
+    proforma?: string | null;
   },
 ): Promise<{ paymentUrl: string; orderId: string; status: string }> {
-  const { data: existing } = await client
-    .from('payment_links')
-    .select('*')
-    .eq('contact_id', args.contactId)
-    .in('status', ['created', 'pending'])
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Lookup priority:
+  //   1) any open link tagged with the same proforma (cross-campaign reuse)
+  //   2) latest open link for this contact (legacy / no-proforma case)
+  let existing: Database['public']['Tables']['payment_links']['Row'] | null = null;
+  if (args.proforma) {
+    const { data } = await client
+      .from('payment_links')
+      .select('*')
+      .in('status', ['created', 'pending'])
+      .eq('raw->>proforma', args.proforma)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    existing = data ?? null;
+  }
+  if (!existing) {
+    const { data } = await client
+      .from('payment_links')
+      .select('*')
+      .eq('contact_id', args.contactId)
+      .in('status', ['created', 'pending'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    existing = data ?? null;
+  }
 
   if (
     existing
@@ -60,6 +80,10 @@ export async function ensurePaymentLinkForContact(
     language: args.language,
   });
 
+  const rawWithProforma = {
+    ...(result.raw as Record<string, unknown>),
+    ...(args.proforma ? { proforma: args.proforma } : {}),
+  };
   const { error } = await client.from('payment_links').insert({
     contact_id: args.contactId,
     campaign_id: args.campaignId,
@@ -69,7 +93,7 @@ export async function ensurePaymentLinkForContact(
     currency: args.currency ?? 'EUR',
     status: 'created',
     expires_at: result.expiresAt,
-    raw: result.raw as Database['public']['Tables']['payment_links']['Insert']['raw'],
+    raw: rawWithProforma as Database['public']['Tables']['payment_links']['Insert']['raw'],
   });
 
   if (error) throw new Error(`Failed to persist payment link: ${error.message}`);

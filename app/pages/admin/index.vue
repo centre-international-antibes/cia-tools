@@ -321,8 +321,8 @@ onMounted(fetchUsers);
               </Label>
               <Switch
                 :id="`scope-${scope}`"
-                :checked="form.scopes.includes(scope)"
-                @update:checked="toggleScope(scope)"
+                :model-value="form.scopes.includes(scope)"
+                @update:model-value="toggleScope(scope)"
               />
             </div>
           </div>

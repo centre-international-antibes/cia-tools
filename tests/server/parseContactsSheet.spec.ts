@@ -12,38 +12,40 @@ function buildXlsx(headers: string[], rows: Array<Record<string, unknown>>): Buf
 }
 
 describe('parseContactsSheet', () => {
-  it('parses ATS rows with conditional flags', () => {
+  it('parses ATS rows with per-document missing flags', () => {
     const buf = buildXlsx(
-      ['email', 'first_name', 'last_name', 'no_flight_info', 'no_passport', 'housing_residence'],
+      ['Email', 'Nom', 'Type', 'Ats', 'Fiche San.', 'Passeport', 'Hébergement'],
       [
         {
-          email: 'a@example.com',
-          first_name: 'Alice',
-          last_name: 'A',
-          no_flight_info: 'true',
-          no_passport: 'false',
-          housing_residence: 'Garrett',
+          Email: 'a@example.com',
+          Nom: 'ALICE A',
+          Type: 'J',
+          Ats: '',
+          'Fiche San.': 'OK',
+          Passeport: 'OK',
+          'Hébergement': 'Garrett',
         },
         {
-          email: 'b@example.com',
-          first_name: 'Bob',
-          last_name: 'B',
-          no_flight_info: 'false',
-          no_passport: 'true',
-          housing_residence: '',
+          Email: 'b@example.com',
+          Nom: 'BOB B',
+          Type: 'J',
+          Ats: 'OK',
+          'Fiche San.': 'OK',
+          Passeport: '',
+          'Hébergement': '',
         },
       ],
     );
     const result = parseContactsSheet(buf, 'ats');
     expect(result.rows).toHaveLength(2);
-    expect(result.rows[0].eligibility.no_flight_info).toBe(true);
+    expect(result.rows[0].eligibility.no_ats_form).toBe(true);
     expect(result.rows[0].eligibility.has_housing).toBe(true);
     expect(result.rows[1].eligibility.no_passport).toBe(true);
     expect(result.rows[1].eligibility.has_housing).toBe(false);
     expect(result.summary.accepted).toBe(2);
   });
 
-  it('flags duplicates and invalid emails as warnings', () => {
+  it('keeps duplicate emails (siblings sharing a parent inbox) and flags invalid emails', () => {
     const buf = buildXlsx(
       ['email', 'first_name', 'last_name'],
       [
@@ -53,10 +55,9 @@ describe('parseContactsSheet', () => {
       ],
     );
     const result = parseContactsSheet(buf, 'ats');
-    expect(result.rows).toHaveLength(1);
-    expect(result.warnings.some((w) => w.code === 'DUPLICATE_EMAIL')).toBe(true);
+    expect(result.rows).toHaveLength(2);
+    expect(result.warnings.some((w) => w.code === 'DUPLICATE_EMAIL')).toBe(false);
     expect(result.warnings.some((w) => w.code === 'INVALID_EMAIL')).toBe(true);
-    expect(result.summary.duplicates).toBe(1);
     expect(result.summary.invalidEmails).toBe(1);
   });
 
@@ -86,7 +87,9 @@ describe('parseContactsSheet', () => {
     const result = parseContactsSheet(buf, 'housing_confirmation');
     expect(result.rows).toHaveLength(1);
     const row = result.rows[0];
-    expect(row.eligibility.package_codes).toEqual(['ESSENTIAL']);
+    expect(row.eligibility.package_codes).toEqual(
+      expect.arrayContaining(['ESSENTIAL', 'PRESTIGE']),
+    );
     expect(Array.isArray((row.raw as { sections?: unknown }).sections)).toBe(true);
   });
 
@@ -130,8 +133,6 @@ describe('parseContactsSheet — real ERP files', () => {
     expect(result.rows.every((r) => /^[a-z0-9.+_-]+@/.test(r.email))).toBe(true);
     // Type A/J → audience adult/junior.
     expect(result.rows.every((r) => r.eligibility.audience === 'adult' || r.eligibility.audience === 'junior')).toBe(true);
-    // At least one row is suppressed via "ats_not_required" (n/a everywhere).
-    expect(result.rows.some((r) => r.eligibility.suppression_reasons?.includes('ats_not_required'))).toBe(true);
   });
 
   it('imports the payment reminder export and detects "ne pas relancer"', () => {

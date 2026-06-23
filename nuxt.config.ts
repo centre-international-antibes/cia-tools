@@ -106,6 +106,40 @@ export default defineNuxtConfig({
     },
     public: {
       ga4Id: process.env.GA4_ID || '',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      brand: {
+        logoUrl:
+          process.env.NUXT_PUBLIC_BRAND_LOGO_URL
+          || 'https://www.cia-france.com/media/3339/logo-cia-horizontal_1151x320.png',
+        companyName: process.env.NUXT_PUBLIC_BRAND_COMPANY_NAME || "Centre International d'Antibes",
+        legalName: process.env.NUXT_PUBLIC_BRAND_LEGAL_NAME || 'SAS CENTRE INTERNATIONAL ANTIBES',
+        addressLine1: process.env.NUXT_PUBLIC_BRAND_ADDRESS_LINE1 || "38 Boulevard d'Aguillon",
+        addressLine2: process.env.NUXT_PUBLIC_BRAND_ADDRESS_LINE2 || '',
+        postalCode: process.env.NUXT_PUBLIC_BRAND_POSTAL_CODE || '06600',
+        city: process.env.NUXT_PUBLIC_BRAND_CITY || 'Antibes',
+        country: process.env.NUXT_PUBLIC_BRAND_COUNTRY || 'France',
+        phone: process.env.NUXT_PUBLIC_BRAND_PHONE || '+33 4 92 90 71 72',
+        websiteUrl: process.env.NUXT_PUBLIC_BRAND_WEBSITE_URL || 'https://www.cia-france.com',
+        websiteLabel: process.env.NUXT_PUBLIC_BRAND_WEBSITE_LABEL || 'www.cia-france.com',
+        supportEmail: process.env.NUXT_PUBLIC_BRAND_SUPPORT_EMAIL || 'direct5@cia-france.com',
+        replyToEmail:
+          process.env.NUXT_PUBLIC_BRAND_REPLY_TO_EMAIL
+          || process.env.BREVO_REPLY_TO
+          || 'direct5@cia-france.com',
+        termsUrl:
+          process.env.NUXT_PUBLIC_BRAND_TERMS_URL
+          || 'https://www.cia-france.com/terms-and-conditions',
+        taglineFr:
+          process.env.NUXT_PUBLIC_BRAND_TAGLINE_FR
+          || 'Apprendre, échanger, découvrir... 40 ans de partage autour du français !',
+        taglineEn:
+          process.env.NUXT_PUBLIC_BRAND_TAGLINE_EN
+          || 'Learn, share, discover... 40 years of sharing the French language!',
+        iban: process.env.NUXT_PUBLIC_BRAND_IBAN || 'FR63 3000 2032 3100 0007 4097 Y88',
+        bic: process.env.NUXT_PUBLIC_BRAND_BIC || 'CRLYFRPP',
+        bankName: process.env.NUXT_PUBLIC_BRAND_BANK_NAME || '',
+        signatureName: process.env.NUXT_PUBLIC_BRAND_SIGNATURE_NAME || 'Back Office Team',
+      },
     },
   },
 
@@ -133,6 +167,10 @@ export default defineNuxtConfig({
         '@vue/devtools-core',
         '@vue/devtools-kit',
         '@vueuse/core',
+        'clsx',
+        'reka-ui',
+        'tailwind-merge',
+        'vue-sonner',
       ]
     },
   },

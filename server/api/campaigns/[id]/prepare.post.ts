@@ -56,6 +56,7 @@ export default defineEventHandler(async (event) => {
     contact_id: r.contactId,
     email: r.email,
     params: cfg.buildParams(r) as Record<string, unknown>,
+    variant: cfg.resolveVariant(r),
     status: 'pending' as const,
   }));
 

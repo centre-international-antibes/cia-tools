@@ -37,6 +37,8 @@ export function parseContactsSheet(
   const cfg = getKindConfig(kind);
   const warnings: ParserWarning[] = [];
   const emptySummary = { total: 0, accepted: 0, suppressed: 0, skipped: 0, duplicates: 0, invalidEmails: 0 };
+  // NOTE: duplicates is kept on the ParseSummary shape for backwards
+  // compatibility but is no longer incremented — see the dedup section below.
 
   let workbook: XLSXType.WorkBook;
   try {
@@ -95,7 +97,11 @@ export function parseContactsSheet(
 
   // ── Row processing ────────────────────────────────────────
   const mapRow = buildRowMapper(kind);
-  const seenEmails = new Set<string>();
+  // Email duplicates are intentionally NOT filtered: two siblings sharing a
+  // parent's inbox is a normal case for ATS / payment-reminder lists. The
+  // DB enforces uniqueness on (list_id, email, COALESCE(group_key, '')) so
+  // true row-level reuploads still collapse at insert time, while distinct
+  // children pass through.
   const rows: ParsedContactRow[] = [];
   const summary = { ...emptySummary };
 
@@ -153,19 +159,6 @@ export function parseContactsSheet(
       });
       return;
     }
-
-    if (seenEmails.has(parsed.email)) {
-      summary.duplicates++;
-      warnings.push({
-        row: lineNo,
-        code: 'DUPLICATE_EMAIL',
-        severity: 'info',
-        email: parsed.email,
-        message: 'Duplicate email — kept the first occurrence.',
-      });
-      return;
-    }
-    seenEmails.add(parsed.email);
 
     if (parsed.eligibility.suppressed) {
       summary.suppressed++;

@@ -8,57 +8,87 @@ describe('campaignKinds registry', () => {
     expect(all.length).toBe(8);
   });
 
-  it('ATS picks the light variant when there is no housing', () => {
+  it('ATS picks the junior variant when audience is junior', () => {
     const cfg = getKindConfig('ats');
     const parsed = cfg.parseRow(
-      { email: 'a@x.com', first_name: 'A', last_name: 'A', no_flight_info: 'true' },
+      { email: 'a@x.com', first_name: 'A', last_name: 'A', audience_tag: 'J' },
       0,
     );
     expect(parsed).not.toBeNull();
-    expect(cfg.resolveVariant(parsed!)).toBe('light');
+    expect(cfg.resolveVariant(parsed!)).toBe('junior');
     const params = cfg.buildParams(parsed!);
-    expect(params.no_flight_info).toBe(true);
+    expect(params.no_ats_form).toBe(true);
+    expect(params.no_health_form).toBe(true);
+    expect(params.no_passport).toBe(true);
+    expect(params.audience).toBe('junior');
   });
 
-  it('ATS picks the full variant when housing is present', () => {
+  it('ATS picks the adult variant when audience is adult', () => {
     const cfg = getKindConfig('ats');
     const parsed = cfg.parseRow(
-      { email: 'a@x.com', first_name: 'A', last_name: 'A', housing_residence: 'Garrett' },
+      { email: 'a@x.com', first_name: 'A', last_name: 'A', audience_tag: 'A', housing_type: 'R', housing_residence: 'Aragon', transfer: 'X' },
       0,
     );
-    expect(cfg.resolveVariant(parsed!)).toBe('full');
+    expect(cfg.resolveVariant(parsed!)).toBe('adult');
+    const params = cfg.buildParams(parsed!);
+    expect(params.is_aragon).toBe(true);
+    expect(params.needs_transfer).toBe(true);
+    expect(params.is_residence).toBe(true);
   });
 
-  it('ATS suppresses rows where every paperwork item is n/a', () => {
+  it('ATS resolves pre-arrival URL by language and housing', () => {
+    const cfg = getKindConfig('ats');
+    const withHousing = cfg.parseRow(
+      { email: 'a@x.com', audience_tag: 'J', housing_residence: 'Garrett' },
+      0,
+    );
+    withHousing!.language = 'fr';
+    const withoutHousing = cfg.parseRow(
+      { email: 'b@x.com', audience_tag: 'J' },
+      0,
+    );
+    withoutHousing!.language = 'en';
+    expect(cfg.buildParams(withHousing!).pre_arrival_url).toContain('media-file/900');
+    expect(cfg.buildParams(withoutHousing!).pre_arrival_url).toContain('media-file/1749');
+  });
+
+  it('ATS reads adult audience and splits the ERP `Nom` column', () => {
     const cfg = getKindConfig('ats');
     const mapped = buildRowMapper('ats')({
       email: 'a@x.com',
       Nom: 'CLARK Beau',
-      'Règle Ats': 'n/a',
-      Ats: 'n/a',
-      'Fiche San.': 'n/a',
-      Passeport: 'n/a',
+      Ats: 'OK',
+      'Fiche San.': 'OK',
+      Passeport: 'OK',
       Type: 'A',
     });
     const parsed = cfg.parseRow(mapped, 0)!;
     expect(parsed.first_name).toBe('Beau');
     expect(parsed.last_name).toBe('CLARK');
-    expect(parsed.eligibility.suppressed).toBe(true);
-    expect(parsed.eligibility.suppression_reasons).toContain('ats_not_required');
     expect(parsed.eligibility.audience).toBe('adult');
+    expect(parsed.eligibility.no_ats_form).toBe(false);
+    expect(parsed.eligibility.no_health_form).toBe(false);
+    expect(parsed.eligibility.no_passport).toBe(false);
   });
 
-  it('ATS classifies a numeric Règle Ats as "required"', () => {
+  it('ATS marks empty document cells as missing for juniors', () => {
     const cfg = getKindConfig('ats');
     const mapped = buildRowMapper('ats')({
       email: 'a@x.com',
       Nom: 'EDSTROM Arvid',
-      'Règle Ats': '255',
+      Ats: '',
+      'Fiche San.': '',
+      Passeport: '',
       Type: 'J',
     });
     const parsed = cfg.parseRow(mapped, 0)!;
-    expect(parsed.eligibility.ats_rule).toBe('required');
     expect(parsed.eligibility.audience).toBe('junior');
+    expect(parsed.eligibility.no_ats_form).toBe(true);
+    expect(parsed.eligibility.no_health_form).toBe(true);
+    expect(parsed.eligibility.no_passport).toBe(true);
+    const params = cfg.buildParams(parsed);
+    const docs = params.missing_documents as Array<{ code: string }>;
+    expect(docs.map((d) => d.code)).toEqual(['ats_form', 'health_form', 'passport']);
   });
 
   it('course_location computes start_time per course type', () => {
@@ -139,6 +169,7 @@ describe('campaignKinds registry', () => {
     });
     const parsed = cfg.parseRow(mapped, 0)!;
     expect(parsed.eligibility.reminder_count).toBe(1);
+    expect(parsed.eligibility.cycle_stage).toBe(2);
     expect(cfg.resolveVariant(parsed)).toBe('second');
     const params = cfg.buildParams(parsed);
     expect(params.relance_count).toBe(2);

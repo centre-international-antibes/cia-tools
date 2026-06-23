@@ -5,6 +5,7 @@ const schema = z.object({
   notes: z.string().optional(),
   template_id: z.string().uuid().nullable().optional(),
   template_version_id: z.string().uuid().nullable().optional(),
+  template_overrides: z.record(z.string().uuid()).optional(),
   params_default: z.record(z.unknown()).optional(),
   scheduled_for: z.string().datetime().nullable().optional(),
 });

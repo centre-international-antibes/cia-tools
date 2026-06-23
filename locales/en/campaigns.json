@@ -11,7 +11,7 @@
     "kinds": {
       "ats": {
         "label": "ATS reminder",
-        "description": "Sortie authorisations: missing info, ATS form, housing."
+        "description": "Sortie authorisations: junior (parents) or adult (student) variant."
       },
       "ats_late_arrival": {
         "label": "ATS - Late arrival",
@@ -58,7 +58,6 @@
         "accepted": "contactable",
         "suppressed": "excluded by default",
         "skipped": "skipped",
-        "duplicates": "duplicates",
         "invalid": "invalid emails"
       }
     },
@@ -90,6 +89,12 @@
       "titleFor": "Templates - {kind}",
       "pickTitle": "Pick a template",
       "pickDescription": "Only templates with an active version can be used.",
+      "pickPerVariantDescription": "Pick a template per variant present in the list. Each recipient receives the version matching their variant.",
+      "pickPlaceholder": "Select a template…",
+      "pickRequired": "Required",
+      "pickAllRequiredTitle": "Missing templates",
+      "pickAllRequiredDescription": "Every present variant must be mapped to a template before continuing.",
+      "noVariantAvailable": "No active template for the “{variant}” variant.",
       "empty": "No template available. Create one.",
       "name": "Name",
       "variant": "Variant",
@@ -146,6 +151,7 @@
       "pickListFirst": "Pick a list first.",
       "pickContacts": "Select at least one contact.",
       "pickTemplate": "Pick a template with an active version.",
+      "pickAllVariants": "Pick a template for: {variants}.",
       "error": "Something went wrong.",
       "steps": {
         "list": "List",
@@ -199,6 +205,36 @@
       "sent": "Sent",
       "failed": "Failed",
       "createdAt": "Created at"
+    },
+    "variants": {
+      "ats": {
+        "junior": "Junior (parents)",
+        "adult": "Adult (student)"
+      },
+      "payment_reminder": {
+        "first": "Reminder 1",
+        "second": "Reminder 2 (urgent)",
+        "third": "Reminder 3 (final)"
+      }
+    },
+    "paymentReminder": {
+      "previousTitle": "Previous list (optional)",
+      "previousDescription": "Pick the list of the previous reminder to diff balances against.",
+      "previousList": "Previous list",
+      "previousPlaceholder": "None — starting a new reminder cycle",
+      "previousHelp": "Leave empty for a fresh cycle. Otherwise the diff closes settled cycles and advances unpaid ones to the next stage.",
+      "diffTitle": "Proforma diff",
+      "diffDescription": "Comparison between the previous list and the newly uploaded one.",
+      "diffComputing": "Computing diff…",
+      "diffError": "Failed to compute the diff.",
+      "closed": "Settled",
+      "advanced": "Stage advanced",
+      "unchanged": "Unchanged",
+      "new": "New",
+      "missing": "Missing from new list",
+      "refreshLinks": "Refresh Payzen statuses",
+      "refreshSuccess": "{refreshed} link(s) checked, {closed} cycle(s) closed.",
+      "refreshError": "Failed to refresh Payzen statuses."
     }
   }
 }

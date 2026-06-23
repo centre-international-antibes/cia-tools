@@ -23,9 +23,12 @@ const step = ref<Step>('list');
 const listId = ref<string | null>(null);
 const contacts = ref<CampaignContact[]>([]);
 const selectedContactIds = ref<string[]>([]);
-const template = ref<{ templateId: string | null; versionId: string | null }>({
-  templateId: null,
-  versionId: null,
+const template = ref<{
+  default: { templateId: string | null; versionId: string | null };
+  overrides: Record<string, string>;
+}>({
+  default: { templateId: null, versionId: null },
+  overrides: {},
 });
 const campaign = ref<Campaign | null>(null);
 const campaignName = ref(`${t(props.kindConfig.labelKey)} — ${new Date().toLocaleDateString()}`);
@@ -83,14 +86,22 @@ async function next() {
       await c.campaigns.prepare(created.id, selectedContactIds.value);
       step.value = 'template';
     } else if (step.value === 'template') {
-      if (!template.value.templateId || !template.value.versionId) {
+      const d = template.value.default;
+      if (!d.templateId || !d.versionId) {
         toast.warning(t('campaigns.wizard.pickTemplate'));
+        return;
+      }
+      const presentVariants = inferPresentVariants();
+      const missing = presentVariants.filter((v) => !template.value.overrides[v]);
+      if (missing.length) {
+        toast.warning(t('campaigns.wizard.pickAllVariants', { variants: missing.join(', ') }));
         return;
       }
       const created = await ensureCampaign();
       const updated = await c.campaigns.update(created.id, {
-        template_id: template.value.templateId,
-        template_version_id: template.value.versionId,
+        template_id: d.templateId,
+        template_version_id: d.versionId,
+        template_overrides: template.value.overrides,
       });
       campaign.value = updated;
       step.value = 'review';
@@ -101,6 +112,25 @@ async function next() {
   } finally {
     submitting.value = false;
   }
+}
+
+/**
+ * Mirrors `VariantTemplatePicker.presentVariants` so the wizard can
+ * enforce coverage at the gate. Falls back to the kind's declared
+ * variants when nothing is derivable from contacts.
+ */
+function inferPresentVariants(): string[] {
+  const selected = new Set(selectedContactIds.value);
+  const present = new Set<string>();
+  for (const ct of contacts.value) {
+    if (!selected.has(ct.id)) continue;
+    const e = (ct.eligibility ?? {}) as Record<string, unknown>;
+    const audience = typeof e.audience === 'string' ? e.audience : null;
+    if (props.kind === 'ats' && audience) {
+      present.add(audience === 'adult' ? 'adult' : 'junior');
+    }
+  }
+  return present.size ? [...present] : [...props.kindConfig.variants];
 }
 
 function back() {
@@ -163,7 +193,16 @@ const sampleParams = computed<Record<string, unknown>>(() => {
 
     <!-- Step body -->
     <div v-if="step === 'list'" class="space-y-4">
-      <ContactListUploader :kind="kind" @uploaded="(id) => (listId = id)" />
+      <PaymentReminderUploader
+        v-if="kind === 'payment_reminder'"
+        :kind="kind"
+        @uploaded="(id) => (listId = id)"
+      />
+      <ContactListUploader
+        v-else
+        :kind="kind"
+        @uploaded="(id) => (listId = id)"
+      />
       <ContactListPicker :kind="kind" v-model="listId" />
     </div>
 
@@ -182,23 +221,29 @@ const sampleParams = computed<Record<string, unknown>>(() => {
     </div>
 
     <div v-else-if="step === 'template'" class="space-y-4">
-      <TemplatePicker :kind="kind" v-model="template" />
-      <Card v-if="template.templateId">
+      <VariantTemplatePicker
+        :kind="kind"
+        :variants="kindConfig.variants"
+        :contacts="contacts"
+        :selected-contact-ids="selectedContactIds"
+        v-model="template"
+      />
+      <Card v-if="template.default.templateId">
         <CardHeader class="flex flex-row items-center justify-between">
           <div>
             <CardTitle>{{ t('campaigns.preview.title') }}</CardTitle>
             <CardDescription>{{ t('campaigns.preview.description') }}</CardDescription>
           </div>
           <TestSendDialog
-            :template-version-id="template.versionId"
+            :template-version-id="template.default.versionId"
             :sample-params="sampleParams"
             :campaign-id="campaign?.id ?? null"
           />
         </CardHeader>
         <CardContent>
           <TemplatePreview
-            :template-id="template.templateId"
-            :version-id="template.versionId"
+            :template-id="template.default.templateId"
+            :version-id="template.default.versionId"
             :sample-params="sampleParams"
           />
         </CardContent>
@@ -229,7 +274,7 @@ const sampleParams = computed<Record<string, unknown>>(() => {
 
       <div v-if="campaign" class="flex justify-end gap-2">
         <TestSendDialog
-          :template-version-id="template.versionId"
+          :template-version-id="template.default.versionId"
           :sample-params="sampleParams"
           :campaign-id="campaign.id"
         />

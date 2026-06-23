@@ -69,9 +69,13 @@ function toggleOne(id: string) {
 }
 
 const FLAG_KEYS: Array<keyof EligibilityFlags> = [
-  'no_flight_info',
+  'no_ats_form',
   'no_health_form',
   'no_passport',
+  'needs_transfer',
+  'is_family',
+  'is_residence',
+  'is_aragon',
   'is_private_flat',
   'is_late_arrival',
   'had_complaint',
@@ -85,7 +89,6 @@ function flagsList(e: EligibilityFlags): string[] {
   if (e.audience) out.push(e.audience);
   if (e.course_type) out.push(e.course_type);
   if (e.test_status && e.test_status !== 'pending') out.push(e.test_status);
-  if (e.ats_rule && e.ats_rule !== 'unknown') out.push(`ats:${e.ats_rule}`);
   if (e.reminder_count) out.push(`r${e.reminder_count}`);
   if (e.client_type && !e.client_type.startsWith('DIRECT')) out.push(e.client_type);
   return out;

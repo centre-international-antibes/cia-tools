@@ -5,18 +5,16 @@ import type { CampaignKind } from '~/types/campaign.types';
  *
  * The ERP exports French headers with diacritics, dots and casing
  * (e.g. `Sem. Arr.`, `Hébergement`, `N° Proforma`). The kind registry
- * however speaks canonical snake_case (e.g. `arrival_week`,
- * `housing_residence`, `proforma`). This module is the single bridge.
+ * speaks canonical snake_case (e.g. `arrival_week`, `housing_residence`,
+ * `proforma`). This module is the single bridge.
  *
  *   normalizeHeader('Hébergement')  // → 'hebergement'
  *   normalizeHeader('N° Proforma')  // → 'n_proforma'
  *
- * Then per-kind `ALIASES[kind]` maps any normalized header (or canonical
- * key) to the canonical key used by the registry. Multiple aliases can
- * resolve to the same canonical key.
- *
- * Aliases are matched after normalization, so callers may declare them
- * in their natural French or English form.
+ * Aliases here are strictly the columns the operator actually exports —
+ * see `example-docs/` for the canonical reference. Speculative
+ * cross-language synonyms are deliberately excluded: every alias maps
+ * an ERP header observed in production.
  */
 
 /** Lowercase, strip diacritics, replace non-alphanumerics with `_`. */
@@ -29,171 +27,86 @@ export function normalizeHeader(h: string): string {
     .replace(/^_+|_+$/g, '');
 }
 
-/** Aliases shared by every kind (identity, contact info, ERP context). */
+/**
+ * Aliases shared by every kind. Limited to headers present in every ERP
+ * export (identity, customer tag, audience, notes, reminders).
+ */
 const COMMON_ALIASES: Record<string, string> = {
-  // identity
+  // Identity
   email: 'email',
-  e_mail: 'email',
-  mail: 'email',
-  courriel: 'email',
-  first_name: 'first_name',
-  firstname: 'first_name',
-  prenom: 'first_name',
-  last_name: 'last_name',
-  lastname: 'last_name',
-  nom_de_famille: 'last_name',
-  nom: 'full_name', // ERP `Nom` is the surname+given combo (e.g. "CLARK Beau")
-  full_name: 'full_name',
-  // language
-  language: 'language',
-  langue: 'language',
-  lang: 'language',
-  // ERP metadata
+  nom: 'full_name', // ERP `Nom` is "SURNAME Given"
+  // Customer tag ("DIRECT 2", "Groupe …")
+  nomto: 'nom_to',
+  // ERP operator
   acteur: 'actor',
-  actor: 'actor',
+  // Audience flag (`A` adult / `J` junior)
+  type: 'audience_tag',
+  // Free-form notes
   notes: 'notes',
-  note: 'notes',
-  commentaire: 'notes',
-  // payment list
-  nomto: 'nom_to', // ERP customer-type tag, e.g. "DIRECT 2"
-  nom_to: 'nom_to',
-  client_type: 'client_type',
-  type_client: 'client_type',
-  // adult/junior tag
-  type: 'audience_tag', // A | J
-  audience: 'audience_tag',
-  public: 'audience_tag',
-  // dates and weeks
-  arrivee: 'arrival_date',
-  arrival: 'arrival_date',
-  arrival_at: 'arrival_date',
-  arrival_date: 'arrival_date',
-  depart: 'departure_date',
-  departure: 'departure_date',
-  departure_date: 'departure_date',
-  sem_arr: 'arrival_week',
-  arrival_week: 'arrival_week',
-  sem_dep: 'departure_week',
-  departure_week: 'departure_week',
-  // reminders (already-sent counters in the ERP)
+  // Past reminder columns ("Relance 1/2/3" — store as date-like strings)
   relance_1: 'reminder_1_at',
   relance_2: 'reminder_2_at',
   relance_3: 'reminder_3_at',
-  relance_count: 'reminder_count',
+  // Common week columns
+  sem_arr: 'arrival_week',
+  sem_dep: 'departure_week',
+  // Arrival / departure dates
+  arrivee: 'arrival_date',
+  depart: 'departure_date',
 };
 
-/** Per-kind alias overrides. Merged on top of `COMMON_ALIASES`. */
+/**
+ * Per-kind alias overrides.
+ *
+ * For `ats` and `payment_reminder` the entries are restricted to columns
+ * actually present in the example exports (see `example-docs/ATS - liste
+ * excel complète.xlsx` and `example-docs/Relance solde - liste complète.xlsx`).
+ * Other kinds keep minimal mappings until their real ERP exports land.
+ */
 const ALIASES: Record<CampaignKind, Record<string, string>> = {
   ats: {
-    // ATS-specific
-    regle_ats: 'ats_rule',
-    ats_rule: 'ats_rule',
+    // Per-document presence: empty cell = missing, anything else = on file.
     ats: 'ats_done',
-    ats_done: 'ats_done',
     fiche_san: 'health_form_done',
-    fiche_sanitaire: 'health_form_done',
-    health_form_done: 'health_form_done',
-    no_health_form: 'no_health_form',
-    no_sanitary: 'no_health_form',
     passeport: 'passport_done',
-    passport_done: 'passport_done',
-    no_passport: 'no_passport',
-    missing_passport: 'no_passport',
-    no_flight_info: 'no_flight_info',
-    no_flight: 'no_flight_info',
-    transfert: 'transfer',
-    transfer: 'transfer',
+    // Housing
     hebergement: 'housing_residence',
-    housing_residence: 'housing_residence',
-    residence: 'housing_residence',
     type_heb: 'housing_type',
-    housing_type: 'housing_type',
+    // Transfer (X if requested)
+    transfert: 'transfer',
+    // Arrival details
     arrivee_lieu: 'arrival_location',
-    arrival_location: 'arrival_location',
     arrivee_heure: 'arrival_time',
-    arrival_time: 'arrival_time',
-    arrival_at: 'arrival_date',
     arrivee_info: 'arrival_info',
-    arrival_info: 'arrival_info',
-    is_late_arrival: 'is_late_arrival',
-    late_arrival: 'is_late_arrival',
-    client_id: 'client_id',
-    id: 'client_id',
   },
   ats_late_arrival: {
     hebergement: 'housing_residence',
-    housing_residence: 'housing_residence',
-    residence: 'housing_residence',
+    type_heb: 'housing_type',
     arrivee_lieu: 'arrival_location',
     arrivee_heure: 'arrival_time',
-    arrival_time: 'arrival_time',
-    arrival_at: 'arrival_date',
     arrivee_info: 'arrival_info',
-    arrival_info: 'arrival_info',
-    client_id: 'client_id',
-    id: 'client_id',
   },
-  thanks_direct: {
-    had_complaint: 'had_complaint',
-    complaint: 'had_complaint',
-  },
-  test_fr: {
-    test_link: 'test_link',
-    lien_test: 'test_link',
-    test_status: 'test_status',
-    statut_test: 'test_status',
-  },
+  thanks_direct: {},
+  test_fr: {},
   housing_confirmation: {
     hebergement: 'housing_residence',
-    housing_residence: 'housing_residence',
-    residence: 'housing_residence',
     type_heb: 'housing_type',
-    housing_type: 'housing_type',
-    package_code: 'package_code',
-    package: 'package_code',
-    forfait: 'package_code',
-    start_date: 'start_date',
-    date_debut: 'start_date',
-    end_date: 'end_date',
-    date_fin: 'end_date',
-    client_id: 'client_id',
     id: 'client_id',
   },
-  course_location: {
-    course_type: 'course_type',
-    type_cours: 'course_type',
-  },
-  welcome_pack: {
-    client_type: 'client_type',
-    arrival_at: 'arrival_date',
-  },
+  course_location: {},
+  welcome_pack: {},
   payment_reminder: {
-    // amounts
+    // Amounts
     total: 'total',
     regle: 'paid', // "Réglé"
-    paid: 'paid',
     solde: 'amount_due', // outstanding balance — the dunning target
-    amount_due: 'amount_due',
-    amount: 'amount_due',
-    montant: 'amount_due',
     nb_sem: 'weeks_count',
-    weeks_count: 'weeks_count',
-    // ids
+    // Identifiers
     n_proforma: 'proforma',
-    no_proforma: 'proforma',
-    proforma: 'proforma',
     id: 'client_id',
-    client_id: 'client_id',
-    // payment plan + rule
+    // Payment plan
     paiement: 'payment_plan',
-    payment_plan: 'payment_plan',
     regle_paiement: 'payment_rule',
-    payment_rule: 'payment_rule',
-    // dates
-    due_date: 'due_date',
-    date_echeance: 'due_date',
-    currency: 'currency',
-    devise: 'currency',
   },
 };
 

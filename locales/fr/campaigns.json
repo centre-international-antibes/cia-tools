@@ -11,7 +11,7 @@
     "kinds": {
       "ats": {
         "label": "Relance ATS",
-        "description": "Autorisations de sortie : informations manquantes, fiche ATS, hébergement."
+        "description": "Autorisations de sortie : variante junior (parents) ou adulte (étudiant)."
       },
       "ats_late_arrival": {
         "label": "ATS - Arrivée tardive",
@@ -58,7 +58,6 @@
         "accepted": "à contacter",
         "suppressed": "exclues par défaut",
         "skipped": "ignorées",
-        "duplicates": "doublons",
         "invalid": "emails invalides"
       }
     },
@@ -90,6 +89,12 @@
       "titleFor": "Modèles - {kind}",
       "pickTitle": "Choisir un modèle",
       "pickDescription": "Seuls les modèles actifs sont utilisables.",
+      "pickPerVariantDescription": "Choisissez un modèle par variante présente dans la liste. Chaque destinataire recevra la version correspondant à sa variante.",
+      "pickPlaceholder": "Sélectionner un modèle…",
+      "pickRequired": "Requis",
+      "pickAllRequiredTitle": "Modèles manquants",
+      "pickAllRequiredDescription": "Toutes les variantes présentes doivent avoir un modèle pour pouvoir continuer.",
+      "noVariantAvailable": "Aucun modèle actif pour la variante « {variant} ».",
       "empty": "Aucun modèle disponible. Créez-en un.",
       "name": "Nom",
       "variant": "Variante",
@@ -145,7 +150,6 @@
       "notes": "Notes (interne)",
       "pickListFirst": "Sélectionnez d'abord une liste.",
       "pickContacts": "Sélectionnez au moins un contact.",
-      "pickTemplate": "Choisissez un modèle avec une version active.",
       "error": "Une erreur est survenue.",
       "steps": {
         "list": "Liste",
@@ -199,6 +203,36 @@
       "sent": "Envoyés",
       "failed": "Échec(s)",
       "createdAt": "Créée le"
+    },
+    "variants": {
+      "ats": {
+        "junior": "Junior (parents)",
+        "adult": "Adulte (étudiant)"
+      },
+      "payment_reminder": {
+        "first": "Relance 1",
+        "second": "Relance 2 (urgente)",
+        "third": "Relance 3 (finale)"
+      }
+    },
+    "paymentReminder": {
+      "previousTitle": "Liste précédente (optionnelle)",
+      "previousDescription": "Sélectionnez la liste de la relance précédente pour comparer les soldes.",
+      "previousList": "Liste précédente",
+      "previousPlaceholder": "Aucune — nouvelle série de relances",
+      "previousHelp": "Si vous démarrez un nouveau cycle, laissez vide. Sinon, le différentiel ferme les cycles réglés et fait passer les autres au stade suivant.",
+      "diffTitle": "Différentiel proforma",
+      "diffDescription": "Comparaison entre la liste précédente et celle qui vient d’être importée.",
+      "diffComputing": "Calcul du différentiel en cours…",
+      "diffError": "Impossible de calculer le différentiel.",
+      "closed": "Réglés",
+      "advanced": "Stade en hausse",
+      "unchanged": "Inchangés",
+      "new": "Nouveaux",
+      "missing": "Absents de la nouvelle liste",
+      "refreshLinks": "Rafraîchir les statuts Payzen",
+      "refreshSuccess": "{refreshed} lien(s) vérifié(s), {closed} cycle(s) clôturé(s).",
+      "refreshError": "Impossible de rafraîchir les statuts Payzen."
     }
   }
 }

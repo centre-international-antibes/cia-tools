@@ -154,8 +154,10 @@ export function useCampaigns() {
     get: (id: string) => api<Campaign>(`/api/campaigns/${id}`),
     create: (body: { kind: CampaignKind; name: string; list_id: string; notes?: string }) =>
       api<Campaign>('/api/campaigns', { method: 'POST', body }),
-    update: (id: string, body: Partial<Campaign>) =>
-      api<Campaign>(`/api/campaigns/${id}`, { method: 'PATCH', body }),
+    update: (
+      id: string,
+      body: Partial<Campaign> & { template_overrides?: Record<string, string> },
+    ) => api<Campaign>(`/api/campaigns/${id}`, { method: 'PATCH', body }),
     remove: (id: string) =>
       api<{ success: boolean }>(`/api/campaigns/${id}`, { method: 'DELETE' }),
     prepare: (id: string, contactIds: string[]) =>
@@ -172,6 +174,35 @@ export function useCampaigns() {
       api<{ success: boolean }>(`/api/campaigns/${id}/abort`, { method: 'POST' }),
     recipients: (id: string, params?: { status?: string; limit?: number; offset?: number }) =>
       api<RecipientsPage>(`/api/campaigns/${id}/recipients`, { query: params }),
+  };
+
+  // ── Payment reminder lifecycle ───────────────────────────
+  interface DiffEntry {
+    proforma: string;
+    email: string;
+    stage: number;
+    amount_cents: number;
+    paid_cents: number;
+    cycle_id: string | null;
+  }
+  interface DiffResult {
+    closed: DiffEntry[];
+    advanced: DiffEntry[];
+    unchanged: DiffEntry[];
+    new: DiffEntry[];
+    missing: DiffEntry[];
+  }
+  const paymentReminder = {
+    diff: (prevListId: string, newListId: string) =>
+      api<DiffResult>('/api/campaigns/payment-reminder/diff', {
+        method: 'POST',
+        body: { prevListId, newListId },
+      }),
+    refreshLinks: (listId: string) =>
+      api<{ refreshed: number; closed: number; total: number }>(
+        '/api/campaigns/payment-reminder/refresh-links',
+        { method: 'POST', body: { listId } },
+      ),
   };
 
   // ── Misc ─────────────────────────────────────────────────
@@ -193,6 +224,7 @@ export function useCampaigns() {
     lists,
     templates,
     campaigns,
+    paymentReminder,
     testSend,
   };
 }

@@ -42,7 +42,9 @@ export default defineEventHandler(async (event) => {
     ? (version.variables_schema as Array<{ key: string; sample?: unknown }>)
     : [];
   for (const v of vars) if (v.sample !== undefined) schemaSamples[v.key] = v.sample;
-  const params = { ...schemaSamples, ...body.params };
+  const language = body.params?.language === 'en' ? 'en' : 'fr';
+  const brandParams = brandToHandlebarsParams(getBrand(event), language);
+  const params = { ...brandParams, ...schemaSamples, ...body.params };
 
   return renderTemplate(version, params);
 });

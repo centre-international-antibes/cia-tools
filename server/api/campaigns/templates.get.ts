@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   let query = client
     .from('email_templates')
-    .select('*, current_version:email_template_versions!email_templates_current_version_id_fkey(id, version, subject, created_at)')
+    .select('*, current_version:email_template_versions!fk_email_templates_current_version(id, version, subject, created_at)')
     .order('created_at', { ascending: false });
   if (q.kind) query = query.eq('kind', q.kind as CampaignKind);
 

@@ -34,14 +34,12 @@ export interface TemplateVariable {
  * `do_not_contact` — explicit "ne pas relancer" note or DNC tag from the ERP.
  * `credit_note`    — refund/credit reference ("Avoir n°…") in notes.
  * `manual_payment` — Notes mention "Virement" / "Transfert" => out-of-band paid.
- * `ats_not_required` — ATS rule explicitly marked `n/a` (not applicable).
  * `missing_data`   — kind-specific required signal absent (e.g. no amount due).
  */
 export type SuppressionReason =
   | 'do_not_contact'
   | 'credit_note'
   | 'manual_payment'
-  | 'ats_not_required'
   | 'already_reminded_max'
   | 'missing_data'
   | 'wrong_client_type'
@@ -50,12 +48,9 @@ export type SuppressionReason =
 /** Eligibility flags computed by the kind registry from a raw contact row. */
 export interface EligibilityFlags {
   /** ATS: information missing flags */
-  no_flight_info?: boolean;
+  no_ats_form?: boolean;
   no_health_form?: boolean;
   no_passport?: boolean;
-  /** ATS: status of each required item (`required` | `done` | `not_applicable`). */
-  ats_rule?: 'required' | 'done' | 'not_applicable' | 'unknown';
-  ats_status?: 'required' | 'done' | 'not_applicable' | 'unknown';
   /** ATS: housing variant */
   has_housing?: boolean;
   housing_residence?: string;
@@ -87,6 +82,12 @@ export interface EligibilityFlags {
   proforma?: string;
   weeks_count?: number;
   reminder_count?: number;
+  cycle_stage?: 1 | 2 | 3;
+  /** ATS: derived housing / transfer flags surfaced to the renderer. */
+  is_family?: boolean;
+  is_residence?: boolean;
+  is_aragon?: boolean;
+  needs_transfer?: boolean;
   /** Direct client filter */
   client_type?: string;
   /** Suppression — row was kept but should not be contacted by default. */

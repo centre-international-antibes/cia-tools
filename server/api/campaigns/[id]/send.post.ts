@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
         hmacKey: config.payzen.hmacKey,
         returnUrl: config.payzen.returnUrl,
       },
+      brand: getBrand(event),
     },
     campaignId,
   ).catch((err) => {

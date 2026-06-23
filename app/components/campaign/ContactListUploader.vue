@@ -79,12 +79,11 @@ async function submit() {
         {{ t('campaigns.upload.submit') }}
       </Button>
 
-      <div v-if="summary" class="grid grid-cols-3 gap-2 rounded-md border bg-muted/30 p-3 text-xs sm:grid-cols-6">
+      <div v-if="summary" class="grid grid-cols-3 gap-2 rounded-md border bg-muted/30 p-3 text-xs sm:grid-cols-5">
         <div><div class="font-medium">{{ summary.total }}</div><div class="text-muted-foreground">{{ t('campaigns.upload.summary.total') }}</div></div>
         <div><div class="font-medium text-green-700">{{ summary.accepted }}</div><div class="text-muted-foreground">{{ t('campaigns.upload.summary.accepted') }}</div></div>
         <div><div class="font-medium text-amber-700">{{ summary.suppressed }}</div><div class="text-muted-foreground">{{ t('campaigns.upload.summary.suppressed') }}</div></div>
         <div><div class="font-medium">{{ summary.skipped }}</div><div class="text-muted-foreground">{{ t('campaigns.upload.summary.skipped') }}</div></div>
-        <div><div class="font-medium">{{ summary.duplicates }}</div><div class="text-muted-foreground">{{ t('campaigns.upload.summary.duplicates') }}</div></div>
         <div><div class="font-medium">{{ summary.invalidEmails }}</div><div class="text-muted-foreground">{{ t('campaigns.upload.summary.invalid') }}</div></div>
       </div>
 

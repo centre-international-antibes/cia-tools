@@ -8,6 +8,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "generate:schema": "npx supabase gen types typescript --local > app/types/database.types.ts",
+    "seed:templates": "tsx scripts/seed-default-templates.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "nuxt preview",
@@ -46,6 +47,8 @@
   },
   "devDependencies": {
     "@iconify-json/circle-flags": "1.2.10",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.20.0",
     "@iconify-json/line-md": "1.2.16",
     "@iconify-json/lucide": "^1.2.111",
     "@types/html-to-text": "^9.0.4",

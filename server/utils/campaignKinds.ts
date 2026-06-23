@@ -184,6 +184,67 @@ function reminderCount(raw: Record<string, unknown>): number {
 }
 
 /**
+ * Cycle stage = the next reminder we owe the customer, derived from which
+ * `Relance N` columns the ERP already filled in.
+ *   - no reminder column set     → stage 1 (first send)
+ *   - `Relance 1` set            → stage 2 (urgent send)
+ *   - `Relance 2` (or both) set  → stage 3 (final notice)
+ *   - all three set              → stage 3 (saturated; sender suppresses)
+ */
+function latestReminderStage(raw: Record<string, unknown>): 1 | 2 | 3 {
+  if (asString(raw.reminder_3_at)) return 3;
+  if (asString(raw.reminder_2_at)) return 3;
+  if (asString(raw.reminder_1_at)) return 2;
+  return 1;
+}
+
+/** Map (language, has_housing) → official pre-arrival PDF URL. */
+const PRE_ARRIVAL_URLS = {
+  fr: {
+    withHousing: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf',
+    withoutHousing: 'https://www.cia-france.com/media-file/1748/documents-avant-arrivee-sans-hebergement.pdf',
+  },
+  en: {
+    withHousing: 'https://www.cia-france.com/media-file/901/pre-arrival-documents-english.pdf',
+    withoutHousing: 'https://www.cia-france.com/media-file/1749/pre-arrival-documents-without-accommodation.pdf',
+  },
+} as const;
+
+function preArrivalUrl(language: 'fr' | 'en', hasHousing: boolean): string {
+  const set = PRE_ARRIVAL_URLS[language] ?? PRE_ARRIVAL_URLS.fr;
+  return hasHousing ? set.withHousing : set.withoutHousing;
+}
+
+/**
+ * Build the per-recipient ATS checklist, listing only items still missing.
+ * Health form + passport apply to juniors only; flight info applies whenever
+ * arrival is not yet known.
+ */
+function missingAtsDocuments(
+  e: EligibilityFlags,
+  audience: 'junior' | 'adult',
+  language: 'fr' | 'en',
+): Array<{ code: string; label: string; url: string }> {
+  const labels = language === 'fr'
+    ? {
+      ats: 'Fiche ATS (autorisation de sortie)',
+      health: 'Fiche sanitaire',
+      passport: 'Copie du passeport',
+    }
+    : {
+      ats: 'ATS form (sortie authorisation)',
+      health: 'Health form',
+      passport: 'Copy of passport',
+    };
+  const out: Array<{ code: string; label: string; url: string }> = [];
+  if (audience !== 'junior') return out;
+  if (e.no_ats_form) out.push({ code: 'ats_form', label: labels.ats, url: '' });
+  if (e.no_health_form) out.push({ code: 'health_form', label: labels.health, url: '' });
+  if (e.no_passport) out.push({ code: 'passport', label: labels.passport, url: '' });
+  return out;
+}
+
+/**
  * The ERP `Type` column carries A (Adult) / J (Junior). Falling back
  * to `audience`/`public` keeps the parser usable for hand-built CSVs.
  */
@@ -203,16 +264,6 @@ function readClientType(raw: Record<string, unknown>): string {
   if (nomTo.startsWith('DIRECT')) return 'DIRECT';
   if (nomTo.startsWith('GROUP') || nomTo.startsWith('GROUPE')) return 'GROUP';
   return nomTo;
-}
-
-/** ATS rule cell may contain a numeric reference, `n/a`, `Non`, `XXX` or be empty. */
-// TODO Add other rules like 255 = Cours only, XXX = not authorized to go out because too young but needs full ATS...etc
-function classifyAtsRule(rule: string, done: boolean): EligibilityFlags['ats_rule'] {
-  const r = rule.trim().toLowerCase();
-  if (!r) return 'unknown';
-  if (r === 'n/a' || r === 'na' || r === 'non' || r === '-' || r === 'no') return 'not_applicable';
-  if (done) return 'done';
-  return 'required';
 }
 
 // ── kind config interface ───────────────────────────────────────
@@ -250,16 +301,11 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
     requiredColumns: ['email', 'full_name'],
     optionalColumns: [
       'language',
-      'ats_rule',
       'ats_done',
       'health_form_done',
-      'no_health_form',
       'passport_done',
-      'no_passport',
-      'no_flight_info',
       'housing_residence',
       'housing_type',
-      'is_late_arrival',
       'arrival_date',
       'arrival_time',
       'arrival_location',
@@ -270,52 +316,62 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       'reminder_2_at',
       'reminder_3_at',
     ],
-    variants: ['full', 'light'],
-    defaultVariant: 'full',
+    variants: ['junior', 'adult'],
+    defaultVariant: 'junior',
     templateVariables: [
       ...COMMON_VARS,
       { key: 'audience', type: 'string', required: false, sample: 'junior' },
-      { key: 'no_flight_info', type: 'boolean', required: false, sample: false },
+      { key: 'no_ats_form', type: 'boolean', required: false, sample: false },
       { key: 'no_health_form', type: 'boolean', required: false, sample: false },
       { key: 'no_passport', type: 'boolean', required: false, sample: false },
-      { key: 'fiche_ats_required', type: 'boolean', required: false, sample: true },
+      { key: 'has_housing', type: 'boolean', required: false, sample: true },
       { key: 'housing_residence', type: 'string', required: false, sample: 'Garrett' },
+      { key: 'housing_type', type: 'string', required: false, sample: 'F' },
+      { key: 'is_family', type: 'boolean', required: false, sample: false },
+      { key: 'is_residence', type: 'boolean', required: false, sample: true },
+      { key: 'is_aragon', type: 'boolean', required: false, sample: false },
+      { key: 'needs_transfer', type: 'boolean', required: false, sample: false },
       { key: 'arrival_at', type: 'string', required: false, sample: '' },
       { key: 'arrival_location', type: 'string', required: false, sample: 'Nice Airport' },
       { key: 'is_late_arrival', type: 'boolean', required: false, sample: false },
+      { key: 'pre_arrival_url', type: 'url', required: false, sample: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf' },
+      {
+        key: 'missing_documents',
+        type: 'array',
+        required: false,
+        sample: [{ code: 'flight_info', label: 'Flight info', url: '' }],
+      },
     ],
-    parseRow(raw) {
+    parseRow(raw, index) {
       const row = baseRow(raw);
       if (!row.email) return null;
 
       const audience = readAudience(raw);
       const residence = asString(raw.housing_residence);
       const housingType = asString(raw.housing_type);
-      const atsRule = asString(raw.ats_rule);
-      const atsDone = asString(raw.ats_done);
-      const healthDone = asString(raw.health_form_done);
-      const passportDone = asString(raw.passport_done);
+      // Per spec: an empty `Ats` / `Fiche San.` / `Passeport` cell means the
+      // document is missing; any non-empty value (OK, a date, etc.) means it's
+      // already on file. We ignore `Règle Ats` entirely — it's an internal
+      // rule about going-out rights, not an email trigger.
+      const noAtsForm = !asString(raw.ats_done);
+      const noHealthForm = !asString(raw.health_form_done);
+      const noPassport = !asString(raw.passport_done);
       const arrivalTime = asString(raw.arrival_time);
-      const isLate = asBool(raw.is_late_arrival) || /late|tard/i.test(arrivalTime);
+      const isLate = /late|tard/i.test(arrivalTime);
+      const housingTypeUpper = housingType.toUpperCase();
 
-      const atsClass = classifyAtsRule(atsRule, asBool(atsDone) || /^[0-9]+$/.test(atsDone));
-      const healthClass = classifyAtsRule(atsRule, asBool(healthDone));
-      const passportClass = classifyAtsRule(atsRule, asBool(passportDone));
-
-      // "no_*" means "we need this from them but haven't received it yet".
-      // n/a means the item doesn't apply (e.g. EU citizen with no passport requirement).
       const e: EligibilityFlags = {
-        no_flight_info: asBool(raw.no_flight_info) || (audience === 'junior' && !asString(raw.transfer)),
-        no_health_form:
-          asBool(raw.no_health_form) || (healthClass === 'required'),
-        no_passport:
-          asBool(raw.no_passport) || (passportClass === 'required'),
-        ats_rule: atsClass,
-        ats_status: atsClass,
+        no_ats_form: noAtsForm,
+        no_health_form: noHealthForm,
+        no_passport: audience === 'junior' && noPassport,
         housing_residence: residence,
         housing_type: housingType,
-        has_housing: residence !== '',
+        has_housing: residence !== '' || housingTypeUpper === 'F' || housingTypeUpper === 'R',
         is_private_flat: residence ? isPrivateFlat(residence) : false,
+        is_family: housingTypeUpper === 'F',
+        is_residence: housingTypeUpper === 'R',
+        is_aragon: /aragon/i.test(residence),
+        needs_transfer: asBool(raw.transfer),
         is_late_arrival: isLate,
         arrival_date: asString(raw.arrival_date),
         arrival_time: arrivalTime,
@@ -326,9 +382,6 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       };
 
       const suppression = detectSuppressionFromNotes(asString(raw.notes));
-      if (atsClass === 'not_applicable' && healthClass === 'not_applicable' && passportClass === 'not_applicable') {
-        suppression.reasons.push('ats_not_required');
-      }
       if (suppression.reasons.length) {
         e.suppressed = true;
         e.suppression_reasons = suppression.reasons;
@@ -336,26 +389,37 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       }
 
       row.eligibility = e;
-      row.group_key = asString(raw.client_id) || null;
+      // ATS exports have no client_id column — give each row its own group key
+      // so siblings sharing a parent's email survive as distinct contacts.
+      row.group_key = `ats-${index}`;
       return row;
     },
     resolveVariant(c) {
-      return c.eligibility.has_housing ? 'full' : 'light';
+      return c.eligibility.audience === 'adult' ? 'adult' : 'junior';
     },
     buildParams(c) {
+      const audience = c.eligibility.audience ?? 'junior';
+      const hasHousing = !!c.eligibility.has_housing;
       return {
         first_name: c.first_name,
         last_name: c.last_name,
-        audience: c.eligibility.audience ?? '',
-        no_flight_info: !!c.eligibility.no_flight_info,
+        audience,
+        no_ats_form: !!c.eligibility.no_ats_form,
         no_health_form: !!c.eligibility.no_health_form,
         no_passport: !!c.eligibility.no_passport,
-        fiche_ats_required: c.eligibility.ats_rule === 'required',
+        has_housing: hasHousing,
         housing_residence: c.eligibility.housing_residence ?? '',
+        housing_type: c.eligibility.housing_type ?? '',
+        is_family: !!c.eligibility.is_family,
+        is_residence: !!c.eligibility.is_residence,
+        is_aragon: !!c.eligibility.is_aragon,
+        needs_transfer: !!c.eligibility.needs_transfer,
         arrival_at: c.eligibility.arrival_date ?? '',
         arrival_time: c.eligibility.arrival_time ?? '',
         arrival_location: c.eligibility.arrival_location ?? '',
         is_late_arrival: !!c.eligibility.is_late_arrival,
+        pre_arrival_url: preArrivalUrl(c.language, hasHousing),
+        missing_documents: missingAtsDocuments(c.eligibility, audience, c.language),
       };
     },
   },
@@ -686,7 +750,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       'notes',
     ],
     variants: ['first', 'second', 'third'],
-    defaultVariant: 'default',
+    defaultVariant: 'first',
     requiresPaymentLink: true,
     templateVariables: [
       ...COMMON_VARS,
@@ -697,6 +761,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       { key: 'proforma', type: 'string', required: false, sample: 'P26404-B1E09' },
       { key: 'total', type: 'string', required: false, sample: '1 500,00 €' },
       { key: 'paid', type: 'string', required: false, sample: '450,00 €' },
+      { key: 'cycle_stage', type: 'number', required: false, sample: 1 },
     ],
     parseRow(raw) {
       const row = baseRow(raw);
@@ -707,12 +772,15 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       const paidCents = asAmountCents(raw.paid);
       const suppression = detectSuppressionFromNotes(asString(raw.notes));
       const rCount = reminderCount(raw);
+      const cycleStage = latestReminderStage(raw);
       const clientType = readClientType(raw);
       const audience = readAudience(raw);
 
       // Rows without a positive balance are kept for audit but suppressed.
+      // Negative balances are explicit credits / refunds — never send.
       if (cents === null) suppression.reasons.push('invalid_amount');
-      else if (cents <= 0) suppression.reasons.push('missing_data');
+      else if (cents < 0) suppression.reasons.push('do_not_contact');
+      else if (cents === 0) suppression.reasons.push('missing_data');
       // GROUP customers get invoiced separately — only DIRECT goes through
       // Payzen reminders.
       if (clientType && !clientType.startsWith('DIRECT')) {
@@ -731,6 +799,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
         weeks_count: asInt(raw.weeks_count) ?? undefined,
         payment_plan: asString(raw.payment_plan),
         reminder_count: rCount,
+        cycle_stage: cycleStage,
         ...(suppression.reasons.length && {
           suppressed: true,
           suppression_reasons: suppression.reasons,
@@ -741,9 +810,9 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       return row;
     },
     resolveVariant(c) {
-      const n = c.eligibility.reminder_count ?? 0;
-      if (n >= 2) return 'third';
-      if (n === 1) return 'second';
+      const stage = (c.eligibility.cycle_stage as number | undefined) ?? 1;
+      if (stage >= 3) return 'third';
+      if (stage === 2) return 'second';
       return 'first';
     },
     buildParams(c) {
@@ -752,6 +821,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       const locale = c.language === 'en' ? 'en-GB' : 'fr-FR';
       const fmt = (amountCents: number) =>
         new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amountCents / 100);
+      const stage = (c.eligibility.cycle_stage as number | undefined) ?? 1;
       return {
         first_name: c.first_name,
         last_name: c.last_name,
@@ -762,7 +832,8 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
         paid: c.eligibility.paid_cents != null ? fmt(c.eligibility.paid_cents) : '',
         due_date: c.eligibility.due_date ?? '',
         payment_url: (c.eligibility.payment_url as string) ?? '',
-        relance_count: (c.eligibility.reminder_count ?? 0) + 1,
+        cycle_stage: stage,
+        relance_count: stage,
         proforma: c.eligibility.proforma ?? '',
       };
     },

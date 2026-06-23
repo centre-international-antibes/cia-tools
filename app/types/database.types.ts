@@ -549,6 +549,98 @@ export type Database = {
           },
         ]
       }
+      payment_reminder_cycles: {
+        Row: {
+          amount_cents: number
+          client_id: string | null
+          closed_at: string | null
+          created_at: string
+          currency: string
+          email: string
+          first_list_id: string | null
+          id: string
+          last_campaign_id: string | null
+          last_list_id: string | null
+          notes: string
+          paid_cents: number
+          payment_link_id: string | null
+          proforma: string
+          stage: number
+          status: string
+          total_cents: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          client_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          currency?: string
+          email: string
+          first_list_id?: string | null
+          id?: string
+          last_campaign_id?: string | null
+          last_list_id?: string | null
+          notes?: string
+          paid_cents?: number
+          payment_link_id?: string | null
+          proforma: string
+          stage?: number
+          status?: string
+          total_cents?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          client_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          currency?: string
+          email?: string
+          first_list_id?: string | null
+          id?: string
+          last_campaign_id?: string | null
+          last_list_id?: string | null
+          notes?: string
+          paid_cents?: number
+          payment_link_id?: string | null
+          proforma?: string
+          stage?: number
+          status?: string
+          total_cents?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_reminder_cycles_first_list_id_fkey"
+            columns: ["first_list_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminder_cycles_last_campaign_id_fkey"
+            columns: ["last_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminder_cycles_last_list_id_fkey"
+            columns: ["last_list_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminder_cycles_payment_link_id_fkey"
+            columns: ["payment_link_id"]
+            isOneToOne: false
+            referencedRelation: "payment_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

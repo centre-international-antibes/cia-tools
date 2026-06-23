@@ -5,7 +5,8 @@ import { renderTemplate } from './templateRenderer';
 import { logAudit } from './audit';
 import { ensurePaymentLinkForContact } from './paymentLinks';
 import { getKindConfig } from './campaignKinds';
-import type { PayzenConfig } from './payzen';
+import { brandToHandlebarsParams, type BrandContext } from './brand';
+import { PayzenError, type PayzenConfig } from './payzen';
 
 const BATCH_SIZE = 50;
 const MAX_ATTEMPTS = 3;
@@ -19,6 +20,7 @@ interface SendCtx {
     replyTo: string;
   };
   payzen: PayzenConfig;
+  brand: BrandContext;
 }
 
 /**
@@ -53,21 +55,45 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
     kind: campaign.kind,
   });
 
-  const { data: version } = await client
+  const { data: defaultVersion } = await client
     .from('email_template_versions')
     .select('*')
     .eq('id', campaign.template_version_id)
     .single();
 
-  if (!version) throw new Error('Template version vanished mid-send.');
+  if (!defaultVersion) throw new Error('Template version vanished mid-send.');
 
   const kindCfg = getKindConfig(campaign.kind);
+
+  // Resolve per-variant overrides up front. Each unique variant maps to at
+  // most one template_version; if absent, recipients fall back to the
+  // campaign's default version.
+  const overrideMap = (campaign.template_overrides ?? {}) as Record<string, string>;
+  const overrideVersionIds = Array.from(
+    new Set(Object.values(overrideMap).filter((v): v is string => typeof v === 'string' && v.length > 0)),
+  );
+  const versionsById = new Map<string, typeof defaultVersion>();
+  versionsById.set(defaultVersion.id, defaultVersion);
+  if (overrideVersionIds.length) {
+    const { data: extraVersions } = await client
+      .from('email_template_versions')
+      .select('*')
+      .in('id', overrideVersionIds);
+    for (const v of extraVersions ?? []) versionsById.set(v.id, v);
+  }
+  function pickVersion(variant: string | null): typeof defaultVersion {
+    if (variant && overrideMap[variant]) {
+      const v = versionsById.get(overrideMap[variant]);
+      if (v) return v;
+    }
+    return defaultVersion;
+  }
 
   let processed = 0;
   while (true) {
     const { data: batch } = await client
       .from('campaign_recipients')
-      .select('id, contact_id, email, params, status, attempts')
+      .select('id, contact_id, email, params, status, attempts, variant')
       .eq('campaign_id', campaignId)
       .in('status', ['pending', 'queued', 'failed'])
       .lt('attempts', MAX_ATTEMPTS)
@@ -93,6 +119,9 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
           if (typeof amount !== 'number') {
             throw new Error('No amount on contact — cannot create payment link.');
           }
+          const proforma = String(
+            (contact.eligibility as Record<string, unknown>)?.proforma ?? '',
+          ) || null;
           const link = await ensurePaymentLinkForContact(client, ctx.payzen, {
             contactId: contact.id,
             campaignId,
@@ -102,10 +131,18 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
             amountCents: amount,
             currency: String((contact.raw as Record<string, unknown>)?.currency ?? 'EUR'),
             language: contact.language === 'en' ? 'en' : 'fr',
+            proforma,
           });
           params = { ...params, payment_url: link.paymentUrl };
         }
 
+        const language = (recipient.params as Record<string, unknown>)?.language === 'en' ? 'en' : 'fr';
+        params = {
+          ...brandToHandlebarsParams(ctx.brand, language),
+          ...params,
+        };
+
+        const version = pickVersion(recipient.variant);
         const rendered = renderTemplate(version, params);
 
         if (rendered.missingVariables.length) {
@@ -141,7 +178,21 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
         const message =
           err instanceof BrevoError
             ? `[Brevo ${err.statusCode}] ${err.message}`
-            : (err as Error).message;
+            : err instanceof PayzenError
+              ? err.toDisplayString()
+              : (err as Error).message;
+        if (err instanceof PayzenError) {
+          console.error('[campaignSender] payzen error', {
+            campaignId,
+            recipientId: recipient.id,
+            statusCode: err.statusCode,
+            code: err.code,
+            detailedCode: err.detailedCode,
+            detailedMessage: err.detailedMessage,
+            endpoint: err.endpoint,
+            payload: err.payload,
+          });
+        }
         const attempts = recipient.attempts + 1;
         await client
           .from('campaign_recipients')

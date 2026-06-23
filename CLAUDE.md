@@ -45,6 +45,10 @@ npx shadcn-vue@latest add <component>      # add UI primitive
 SUPABASE_URL=                # http://127.0.0.1:54321 in dev
 SUPABASE_KEY=                # anon key
 NUXT_SUPABASE_SECRET_KEY=    # service_role — server-only
+NUXT_PUBLIC_SITE_URL=        # public site origin (defaults to http://localhost:3000)
+
+# Brand identity injected into every transactional email — all NUXT_PUBLIC_BRAND_*
+# vars fall back to CIA defaults. See .env.example for the full list.
 
 # Brevo (transactional)
 BREVO_API_KEY=
@@ -82,6 +86,9 @@ Under `/dashboard/campaigns`. Eight kinds share one wizard (list → contacts �
 - **Audit**: `logAudit()` writes every meaningful action to `public.audit_log` (admin-readable).
 
 Kind-specific logic (required columns, eligibility flags, default variant, params builder, optional row grouping) lives in **one** registry: `server/utils/campaignKinds.ts`. Add new kinds by extending it.
+
+- **Layout & defaults**: shared MJML wrapper (`server/utils/mjml/layout.ts`), brand vars injected from `runtimeConfig.public.brand.*` at render time, default MJML templates under `server/utils/mjml/templates/`. Seed defaults into the DB via `npm run seed:templates` (idempotent; templates whose description starts with `[custom]` are skipped).
+- **Payment reminder cycles**: `payment_reminder_cycles` tracks one open cycle per proforma. `PaymentReminderUploader.vue` shows a proforma diff between previous and new uploads and exposes a "refresh Payzen statuses" action that closes paid cycles.
 
 ## Conventions
 
