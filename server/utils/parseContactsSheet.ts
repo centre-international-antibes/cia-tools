@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import type * as XLSXType from 'xlsx';
+import * as XLSX from 'xlsx';
 import { getKindConfig } from './campaignKinds';
 import { buildRowMapper, normalizeHeader, requirementSatisfiers } from './headerMap';
 import type {
@@ -8,9 +8,6 @@ import type {
   ParsedContactRow,
   ParserWarning,
 } from '~/types/campaign.types';
-
-const require = createRequire(import.meta.url);
-const XLSX = require('xlsx') as typeof XLSXType;
 
 /** Hard limit on number of rows processed per file. Anything beyond is dropped with a warning. */
 const MAX_ROWS = 5000;
@@ -40,7 +37,7 @@ export function parseContactsSheet(
   // NOTE: duplicates is kept on the ParseSummary shape for backwards
   // compatibility but is no longer incremented — see the dedup section below.
 
-  let workbook: XLSXType.WorkBook;
+  let workbook: XLSX.WorkBook;
   try {
     workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
   } catch (err) {
