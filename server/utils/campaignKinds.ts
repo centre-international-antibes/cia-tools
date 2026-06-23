@@ -296,15 +296,20 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       if (!row.email) return null;
 
       const audience = readAudience(raw);
+      const isJunior = audience !== 'adult'; // null/unknown defaults to junior, same as resolveVariant
       const residence = asString(raw.housing_residence);
       const housingType = asString(raw.housing_type);
       // Per spec: an empty `Ats` / `Fiche San.` / `Passeport` cell means the
       // document is missing; any non-empty value (OK, a date, etc.) means it's
       // already on file. We ignore `Règle Ats` entirely — it's an internal
       // rule about going-out rights, not an email trigger.
-      const noAtsForm = !asString(raw.ats_done);
-      const noHealthForm = !asString(raw.health_form_done);
-      const noPassport = !asString(raw.passport_done);
+      //
+      // Document flags only apply to juniors — the adult variant is purely
+      // about arrival info, never about documents. Forcing them false here
+      // keeps the doc-suppression rule from misfiring on adult rows.
+      const noAtsForm = isJunior && !asString(raw.ats_done);
+      const noHealthForm = isJunior && !asString(raw.health_form_done);
+      const noPassport = isJunior && !asString(raw.passport_done);
       const arrivalTime = asString(raw.arrival_time);
       const isLate = /late|tard/i.test(arrivalTime);
       const housingTypeUpper = housingType.toUpperCase();
@@ -312,7 +317,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       const e: EligibilityFlags = {
         no_ats_form: noAtsForm,
         no_health_form: noHealthForm,
-        no_passport: audience === 'junior' && noPassport,
+        no_passport: noPassport,
         housing_residence: residence,
         housing_type: housingType,
         has_housing: residence !== '' || housingTypeUpper === 'F' || housingTypeUpper === 'R',
@@ -331,6 +336,16 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       };
 
       const suppression = detectSuppressionFromNotes(asString(raw.notes));
+      // Decide whether the row still has a reason to be emailed:
+      //  • Junior — we send to chase missing documents. If every doc is on
+      //    file, the reminder is pointless → suppress.
+      //  • Adult — we send to collect arrival info (schedule + transfer). If
+      //    we already have `arrival_time`, we know their schedule → suppress.
+      // Operators can still re-include suppressed rows from the wizard.
+      const nothingNeeded = isJunior
+        ? !noAtsForm && !noHealthForm && !noPassport
+        : !!arrivalTime;
+      if (nothingNeeded) suppression.reasons.push('missing_data');
       if (suppression.reasons.length) {
         e.suppressed = true;
         e.suppression_reasons = suppression.reasons;

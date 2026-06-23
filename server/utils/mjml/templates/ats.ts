@@ -36,14 +36,15 @@ function juniorBody(language: 'fr' | 'en'): string {
     ? {
       hello: 'Chers parents,',
       intro: 'Nous allons bient\u00f4t accueillir votre enfant.',
-      missing: 'Il nous manque encore les documents suivants :',
-      noMissing: 'Voici la check-list des documents \u00e0 nous transmettre avant l\u2019arriv\u00e9e.',
-      checklistTitle: 'CHECK-LIST',
+      missingIntro: 'Il nous manque encore les documents suivants :',
+      fullIntro: 'Voici la check-list compl\u00e8te des documents \u00e0 nous transmettre avant l\u2019arriv\u00e9e :',
+      requiredTitle: 'DOCUMENTS \u00c0 NOUS TRANSMETTRE',
       atsForm: 'Fiche ATS (autorisation de sortie)',
       healthForm: 'Fiche sanitaire',
-      passport: 'Copie du passeport',
-      preArrival: 'Documents avant arriv\u00e9e',
+      passport: 'Copie du passeport de votre enfant',
       parentsId: 'Copie de la pi\u00e8ce d\u2019identit\u00e9 / passeport des parents',
+      infoTitle: 'POUR VOTRE INFORMATION',
+      preArrivalLabel: 'Document d\u2019informations pratiques avant arriv\u00e9e :',
       closing: 'Nous restons \u00e0 votre disposition pour toute information compl\u00e9mentaire.',
       preArrivalUrlWith: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf',
       preArrivalUrlWithout: 'https://www.cia-france.com/media-file/1748/documents-avant-arrivee-sans-hebergement.pdf',
@@ -51,14 +52,15 @@ function juniorBody(language: 'fr' | 'en'): string {
     : {
       hello: 'Dear parents,',
       intro: 'We are about to welcome your child shortly.',
-      missing: 'We are still missing the following documents:',
-      noMissing: 'Here is the checklist of documents required before arrival.',
-      checklistTitle: 'CHECK-LIST',
+      missingIntro: 'We are still missing the following documents:',
+      fullIntro: 'Here is the full checklist of documents we need to receive before arrival:',
+      requiredTitle: 'DOCUMENTS WE NEED FROM YOU',
       atsForm: 'ATS form (Going out permission form)',
       healthForm: 'Health form',
-      passport: 'Copy of passport',
-      preArrival: 'Pre-arrival documents',
-      parentsId: 'Parents copy of ID / passport',
+      passport: 'Copy of your child\u2019s passport',
+      parentsId: 'Parents\u2019 copy of ID / passport',
+      infoTitle: 'FOR YOUR INFORMATION',
+      preArrivalLabel: 'Pre-arrival information document:',
       closing: 'We remain at your disposal for any further information.',
       preArrivalUrlWith: 'https://www.cia-france.com/media-file/901/pre-arrival-documents-english.pdf',
       preArrivalUrlWithout: 'https://www.cia-france.com/media-file/1749/pre-arrival-documents-without-accommodation.pdf',
@@ -66,7 +68,12 @@ function juniorBody(language: 'fr' | 'en'): string {
 
   const preArrivalUrl = `{{#if has_housing}}${t.preArrivalUrlWith}{{else}}${t.preArrivalUrlWithout}{{/if}}`;
 
-  const checklistItems = `
+  // Action-items section: items we need parents to send us. The parents'
+  // own ID is always listed (no per-recipient flag tracks it); the other
+  // items are conditional on the missing-doc flags.
+  const requiredSection = `
+    ${heading(t.requiredTitle)}
+    ${paragraph('{{#if has_missing_docs}}' + t.missingIntro + '{{else}}' + t.fullIntro + '{{/if}}')}
     <mj-text
       font-family="${f.family}"
       font-size="${f.sizeBody}"
@@ -74,34 +81,39 @@ function juniorBody(language: 'fr' | 'en'): string {
       color="${c.text}"
       padding="0 24px"
     >
-      {{#if has_missing_docs}}
       <ul style="padding-left: 18px; margin: 0;">
         {{#if no_ats_form}}<li style="margin-bottom: 6px;">${t.atsForm}</li>{{/if}}
         {{#if no_health_form}}<li style="margin-bottom: 6px;">${t.healthForm}</li>{{/if}}
         {{#if no_passport}}<li style="margin-bottom: 6px;">${t.passport}</li>{{/if}}
+        <li style="margin-bottom: 6px;">${t.parentsId}</li>
       </ul>
-      {{/if}}
+    </mj-text>
+  `;
+
+  // Reference section: information we provide (PDF link). Visually distinct
+  // from the action-items section so parents don't mistake the link for
+  // something they must send back.
+  const infoSection = `
+    ${heading(t.infoTitle)}
+    <mj-text
+      font-family="${f.family}"
+      font-size="${f.sizeBody}"
+      line-height="${f.lineHeight}"
+      color="${c.text}"
+      padding="6px 24px"
+    >
+      ${t.preArrivalLabel}<br/>
+      <a href="${preArrivalUrl}" style="color: ${c.primary};">${preArrivalUrl}</a>
     </mj-text>
   `;
 
   return `
     <mj-section padding="20px 0 0">
       <mj-column>
-        ${paragraph(`${t.hello}`)}
-        ${paragraph(`${t.intro}`)}
-        ${paragraph('{{#if has_missing_docs}}' + t.missing + '{{else}}' + t.noMissing + '{{/if}}')}
-        ${heading(t.checklistTitle)}
-        ${checklistItems}
-        <mj-text
-          font-family="${f.family}"
-          font-size="${f.sizeBody}"
-          line-height="${f.lineHeight}"
-          color="${c.text}"
-          padding="10px 24px"
-        >
-          <strong>${t.preArrival}:</strong> <a href="${preArrivalUrl}" style="color: ${c.primary};">${preArrivalUrl}</a><br/>
-          <strong>${t.parentsId}</strong>
-        </mj-text>
+        ${paragraph(t.hello)}
+        ${paragraph(t.intro)}
+        ${requiredSection}
+        ${infoSection}
         ${paragraph(t.closing)}
       </mj-column>
     </mj-section>

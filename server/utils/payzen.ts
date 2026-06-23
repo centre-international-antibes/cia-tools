@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 /**
- * Lyra Collect / PayZen REST API client.
+ * PayZen REST API client.
  * Authentication: HTTP Basic with `${PAYZEN_USERNAME}:${PAYZEN_PASSWORD}` where
  * username is the shop/site ID and password is the secret key.
  *
@@ -109,7 +109,7 @@ async function payzenFetch<T>(
     }
   }
 
-  // Lyra REST always wraps responses (success or error) as:
+  // Payzen REST always wraps responses (success or error) as:
   //   { status: 'SUCCESS' | 'ERROR', answer: { errorCode, errorMessage,
   //     detailedErrorCode, detailedErrorMessage, ...domain fields } }
   // Errors can surface either as HTTP !ok, or HTTP 200 with status === 'ERROR'.
@@ -334,7 +334,7 @@ export async function getOrderStatus(
 }
 
 /**
- * Verifies the IPN signature Lyra sends in `kr-hash`, computed as
+ * Verifies the IPN signature Payzen sends in `kr-hash`, computed as
  * HMAC-SHA256(answer-string, hmacKey) when the `kr-hash-algorithm` header is
  * `sha256_hmac`.
  */
