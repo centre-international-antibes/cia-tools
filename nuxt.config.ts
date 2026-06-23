@@ -146,6 +146,9 @@ export default defineNuxtConfig({
   // ── Nitro ────────────────────────────────────────────
   nitro: {
     experimental: { tasks: true },
+    externals: {
+      inline: ['xlsx']
+    }
   },
 
   // ── Nuxt Supabase ───────────────────────────────────
