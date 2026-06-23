@@ -1,5 +1,5 @@
 import { wrapMjmlLayout } from '../layout';
-import { documentChecklist, heading, paragraph } from '../partials';
+import { heading, paragraph } from '../partials';
 import { EMAIL_TOKENS } from '../tokens';
 import type { DefaultTemplate } from './types';
 
@@ -11,17 +11,10 @@ const f = EMAIL_TOKENS.font;
 const JUNIOR_VARS = [
   { key: 'first_name', type: 'string', required: false, sample: 'Marie' },
   { key: 'last_name', type: 'string', required: false, sample: 'Dupont' },
-  {
-    key: 'missing_documents',
-    type: 'array',
-    required: false,
-    sample: [
-      { code: 'ats_form', label: 'ATS form (sortie authorisation)', url: '' },
-      { code: 'health_form', label: 'Health form', url: '' },
-      { code: 'passport', label: 'Copy of passport', url: '' },
-    ],
-  },
-  { key: 'pre_arrival_url', type: 'url', required: true, sample: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf' },
+  { key: 'no_ats_form', type: 'boolean', required: false, sample: true },
+  { key: 'no_health_form', type: 'boolean', required: false, sample: true },
+  { key: 'no_passport', type: 'boolean', required: false, sample: false },
+  { key: 'has_missing_docs', type: 'boolean', required: false, sample: true },
   { key: 'has_housing', type: 'boolean', required: false, sample: true },
 ] as const;
 
@@ -46,9 +39,14 @@ function juniorBody(language: 'fr' | 'en'): string {
       missing: 'Il nous manque encore les documents suivants :',
       noMissing: 'Voici la check-list des documents \u00e0 nous transmettre avant l\u2019arriv\u00e9e.',
       checklistTitle: 'CHECK-LIST',
+      atsForm: 'Fiche ATS (autorisation de sortie)',
+      healthForm: 'Fiche sanitaire',
+      passport: 'Copie du passeport',
       preArrival: 'Documents avant arriv\u00e9e',
       parentsId: 'Copie de la pi\u00e8ce d\u2019identit\u00e9 / passeport des parents',
       closing: 'Nous restons \u00e0 votre disposition pour toute information compl\u00e9mentaire.',
+      preArrivalUrlWith: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf',
+      preArrivalUrlWithout: 'https://www.cia-france.com/media-file/1748/documents-avant-arrivee-sans-hebergement.pdf',
     }
     : {
       hello: 'Dear parents,',
@@ -56,19 +54,44 @@ function juniorBody(language: 'fr' | 'en'): string {
       missing: 'We are still missing the following documents:',
       noMissing: 'Here is the checklist of documents required before arrival.',
       checklistTitle: 'CHECK-LIST',
+      atsForm: 'ATS form (Going out permission form)',
+      healthForm: 'Health form',
+      passport: 'Copy of passport',
       preArrival: 'Pre-arrival documents',
       parentsId: 'Parents copy of ID / passport',
       closing: 'We remain at your disposal for any further information.',
+      preArrivalUrlWith: 'https://www.cia-france.com/media-file/901/pre-arrival-documents-english.pdf',
+      preArrivalUrlWithout: 'https://www.cia-france.com/media-file/1749/pre-arrival-documents-without-accommodation.pdf',
     };
+
+  const preArrivalUrl = `{{#if has_housing}}${t.preArrivalUrlWith}{{else}}${t.preArrivalUrlWithout}{{/if}}`;
+
+  const checklistItems = `
+    <mj-text
+      font-family="${f.family}"
+      font-size="${f.sizeBody}"
+      line-height="${f.lineHeight}"
+      color="${c.text}"
+      padding="0 24px"
+    >
+      {{#if has_missing_docs}}
+      <ul style="padding-left: 18px; margin: 0;">
+        {{#if no_ats_form}}<li style="margin-bottom: 6px;">${t.atsForm}</li>{{/if}}
+        {{#if no_health_form}}<li style="margin-bottom: 6px;">${t.healthForm}</li>{{/if}}
+        {{#if no_passport}}<li style="margin-bottom: 6px;">${t.passport}</li>{{/if}}
+      </ul>
+      {{/if}}
+    </mj-text>
+  `;
 
   return `
     <mj-section padding="20px 0 0">
       <mj-column>
         ${paragraph(`${t.hello}`)}
         ${paragraph(`${t.intro}`)}
-        ${paragraph('{{#if missing_documents.length}}' + t.missing + '{{else}}' + t.noMissing + '{{/if}}')}
+        ${paragraph('{{#if has_missing_docs}}' + t.missing + '{{else}}' + t.noMissing + '{{/if}}')}
         ${heading(t.checklistTitle)}
-        ${documentChecklist()}
+        ${checklistItems}
         <mj-text
           font-family="${f.family}"
           font-size="${f.sizeBody}"
@@ -76,7 +99,7 @@ function juniorBody(language: 'fr' | 'en'): string {
           color="${c.text}"
           padding="10px 24px"
         >
-          <strong>${t.preArrival}:</strong> <a href="{{pre_arrival_url}}" style="color: ${c.primary};">{{pre_arrival_url}}</a><br/>
+          <strong>${t.preArrival}:</strong> <a href="${preArrivalUrl}" style="color: ${c.primary};">${preArrivalUrl}</a><br/>
           <strong>${t.parentsId}</strong>
         </mj-text>
         ${paragraph(t.closing)}

@@ -66,31 +66,6 @@ export function urgentBanner(text: string): string {
   `;
 }
 
-/**
- * Bulleted checklist rendered from a server-built `missing_documents` array.
- * Empty arrays render nothing (the `{{#if}}` guards the caller's surrounding
- * intro paragraph).
- */
-export function documentChecklist(): string {
-  return `
-    <mj-text
-      font-family="${f.family}"
-      font-size="${f.sizeBody}"
-      line-height="${f.lineHeight}"
-      color="${c.text}"
-      padding="0 24px"
-    >
-      {{#if missing_documents.length}}
-      <ul style="padding-left: 18px; margin: 0;">
-        {{#each missing_documents}}
-        <li style="margin-bottom: 6px;">{{label}}{{#if url}} — <a href="{{url}}" style="color: ${c.primary};">{{url}}</a>{{/if}}</li>
-        {{/each}}
-      </ul>
-      {{/if}}
-    </mj-text>
-  `;
-}
-
 /** A short paragraph rendered with the standard body styling. */
 export function paragraph(content: string): string {
   return `

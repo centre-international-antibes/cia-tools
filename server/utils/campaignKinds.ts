@@ -34,8 +34,9 @@ function pickLanguage(raw: Record<string, unknown>): Language {
   const v = asString(raw.language).toLowerCase();
   if (v.startsWith('en')) return 'en';
   if (v.startsWith('fr')) return 'fr';
-  // ERP rarely sets language; fall back to FR (operators are French).
-  return 'fr';
+  // ERP rarely sets language; fall back to EN (99% of sends are EN, and this
+  // avoids mixed-language renders when the chosen template is the EN variant).
+  return 'en';
 }
 
 function asBool(value: unknown): boolean {
@@ -198,52 +199,6 @@ function latestReminderStage(raw: Record<string, unknown>): 1 | 2 | 3 {
   return 1;
 }
 
-/** Map (language, has_housing) → official pre-arrival PDF URL. */
-const PRE_ARRIVAL_URLS = {
-  fr: {
-    withHousing: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf',
-    withoutHousing: 'https://www.cia-france.com/media-file/1748/documents-avant-arrivee-sans-hebergement.pdf',
-  },
-  en: {
-    withHousing: 'https://www.cia-france.com/media-file/901/pre-arrival-documents-english.pdf',
-    withoutHousing: 'https://www.cia-france.com/media-file/1749/pre-arrival-documents-without-accommodation.pdf',
-  },
-} as const;
-
-function preArrivalUrl(language: 'fr' | 'en', hasHousing: boolean): string {
-  const set = PRE_ARRIVAL_URLS[language] ?? PRE_ARRIVAL_URLS.fr;
-  return hasHousing ? set.withHousing : set.withoutHousing;
-}
-
-/**
- * Build the per-recipient ATS checklist, listing only items still missing.
- * Health form + passport apply to juniors only; flight info applies whenever
- * arrival is not yet known.
- */
-function missingAtsDocuments(
-  e: EligibilityFlags,
-  audience: 'junior' | 'adult',
-  language: 'fr' | 'en',
-): Array<{ code: string; label: string; url: string }> {
-  const labels = language === 'fr'
-    ? {
-      ats: 'Fiche ATS (autorisation de sortie)',
-      health: 'Fiche sanitaire',
-      passport: 'Copie du passeport',
-    }
-    : {
-      ats: 'ATS form (sortie authorisation)',
-      health: 'Health form',
-      passport: 'Copy of passport',
-    };
-  const out: Array<{ code: string; label: string; url: string }> = [];
-  if (audience !== 'junior') return out;
-  if (e.no_ats_form) out.push({ code: 'ats_form', label: labels.ats, url: '' });
-  if (e.no_health_form) out.push({ code: 'health_form', label: labels.health, url: '' });
-  if (e.no_passport) out.push({ code: 'passport', label: labels.passport, url: '' });
-  return out;
-}
-
 /**
  * The ERP `Type` column carries A (Adult) / J (Junior). Falling back
  * to `audience`/`public` keeps the parser usable for hand-built CSVs.
@@ -334,13 +289,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       { key: 'arrival_at', type: 'string', required: false, sample: '' },
       { key: 'arrival_location', type: 'string', required: false, sample: 'Nice Airport' },
       { key: 'is_late_arrival', type: 'boolean', required: false, sample: false },
-      { key: 'pre_arrival_url', type: 'url', required: false, sample: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf' },
-      {
-        key: 'missing_documents',
-        type: 'array',
-        required: false,
-        sample: [{ code: 'flight_info', label: 'Flight info', url: '' }],
-      },
+      { key: 'has_missing_docs', type: 'boolean', required: false, sample: true },
     ],
     parseRow(raw, index) {
       const row = baseRow(raw);
@@ -418,8 +367,11 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
         arrival_time: c.eligibility.arrival_time ?? '',
         arrival_location: c.eligibility.arrival_location ?? '',
         is_late_arrival: !!c.eligibility.is_late_arrival,
-        pre_arrival_url: preArrivalUrl(c.language, hasHousing),
-        missing_documents: missingAtsDocuments(c.eligibility, audience, c.language),
+        has_missing_docs:
+          audience === 'junior'
+          && (!!c.eligibility.no_ats_form
+            || !!c.eligibility.no_health_form
+            || !!c.eligibility.no_passport),
       };
     },
   },
