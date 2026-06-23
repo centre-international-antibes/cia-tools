@@ -104,36 +104,10 @@ export async function sendTransacEmail(
   return { messageId: result.messageId };
 }
 
-/**
- * Verifies a Brevo webhook by recomputing the HMAC-SHA256 signature of the raw
- * body using the shared secret. Brevo does not natively sign webhooks, so we
- * append a `?secret=...` query param when registering the webhook URL OR use
- * the bearer token model. We support both: header `x-brevo-signature` (custom
- * proxy) OR query param `secret`.
- */
-export function verifyBrevoWebhook(
-  rawBody: string,
-  secret: string,
-  signatureHeader: string | null,
-  querySecret: string | null,
-): boolean {
-  if (!secret) return false;
-
-  // Path 1: shared secret in query string (simplest deployment model).
-  if (querySecret && timingSafeEqual(querySecret, secret)) return true;
-
-  // Path 2: HMAC signature.
-  if (signatureHeader) {
-    const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-    return timingSafeEqual(signatureHeader, expected);
-  }
-
-  return false;
-}
-
-function timingSafeEqual(a: string, b: string): boolean {
-  const ba = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ba.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ba, bb);
+/** Brevo "Secured Webhooks" Bearer token check. */
+export function verifyBrevoWebhook(secret: string, authHeader: string | null): boolean {
+  if (!secret || !authHeader?.startsWith('Bearer ')) return false;
+  const a = Buffer.from(authHeader.slice(7));
+  const b = Buffer.from(secret);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }

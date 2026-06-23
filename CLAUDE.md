@@ -81,7 +81,7 @@ Under `/dashboard/campaigns`. Eight kinds share one wizard (list → contacts �
 - **Templates**: MJML stored in `email_templates` + immutable `email_template_versions`. Compiled to HTML server-side. Handlebars handles variable interpolation (`{{first_name}}`, `{{#if ...}}`, `{{#each ...}}`).
 - **Lists**: Matrix / Payzen exports (XLSX or CSV) → private bucket `campaign-imports`. Parsed in `server/utils/parseContactsSheet.ts` using per-kind column maps from `server/utils/campaignKinds.ts`.
 - **Send pipeline**: `POST /api/campaigns/:id/send` queues the campaign; `runCampaignSend` processes recipients in batches via Brevo. Idempotent + resumable. Recipient status precedence enforced on inbound webhook events. `client_request_id` prevents accidental double-send.
-- **Webhooks**: `POST /api/webhooks/brevo` (shared secret in URL or HMAC header), `POST /api/webhooks/payzen` (HMAC-SHA256 on `kr-answer`).
+- **Webhooks**: `POST /api/webhooks/brevo` (Brevo "Secured Webhooks" Bearer token in `Authorization` header), `POST /api/webhooks/payzen` (HMAC-SHA256 on `kr-answer`).
 - **Test sends**: every wizard step shows a "Send test" button; logged in `test_sends`, never affects stats. Rate-limited 10/min/user.
 - **Audit**: `logAudit()` writes every meaningful action to `public.audit_log` (admin-readable).
 

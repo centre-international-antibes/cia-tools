@@ -7,8 +7,6 @@ import type { Database } from '~/types/database.types';
  * milestone. Supported events are mapped to our `email_event_type` enum and
  * dropped into `email_events`; the recipient's status is updated using a
  * fixed precedence ladder so events arriving out-of-order can't downgrade.
- *
- * Authentication: either ?secret=XXX or X-Brevo-Signature: <hmac> header.
  */
 
 const STATUS_PRECEDENCE: Record<string, number> = {
@@ -81,17 +79,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig();
-  const headerSig = getHeader(event, 'x-brevo-signature') ?? null;
-  const querySecret = (getQuery(event).secret as string | undefined) ?? null;
-
-  const verified = verifyBrevoWebhook(
-    rawBody,
-    config.brevo.webhookSecret,
-    headerSig,
-    querySecret,
-  );
-  if (!verified) {
-    throw createError({ statusCode: 401, statusMessage: 'Invalid signature.' });
+  const auth = getHeader(event, 'authorization') ?? null;
+  if (!verifyBrevoWebhook(config.brevo.webhookSecret, auth)) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized.' });
   }
 
   let payload: Record<string, unknown> | Record<string, unknown>[];

@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import crypto from 'node:crypto';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { sendTransacEmail, BrevoError, verifyBrevoWebhook } from '~/server/utils/brevo';
 
 describe('Brevo client', () => {
@@ -47,22 +46,20 @@ describe('Brevo client', () => {
 describe('verifyBrevoWebhook', () => {
   const secret = 'shared-secret';
 
-  it('accepts a matching query secret', () => {
-    expect(verifyBrevoWebhook('{}', secret, null, secret)).toBe(true);
+  it('accepts a matching Bearer token', () => {
+    expect(verifyBrevoWebhook(secret, `Bearer ${secret}`)).toBe(true);
   });
 
-  it('accepts a matching HMAC signature header', () => {
-    const body = JSON.stringify({ event: 'delivered' });
-    const sig = crypto.createHmac('sha256', secret).update(body).digest('hex');
-    expect(verifyBrevoWebhook(body, secret, sig, null)).toBe(true);
+  it('rejects a bad Bearer token', () => {
+    expect(verifyBrevoWebhook(secret, 'Bearer wrong')).toBe(false);
   });
 
-  it('rejects bad signatures', () => {
-    expect(verifyBrevoWebhook('{}', secret, 'bad-sig', null)).toBe(false);
-    expect(verifyBrevoWebhook('{}', secret, null, 'bad-secret')).toBe(false);
+  it('rejects unknown auth schemes', () => {
+    expect(verifyBrevoWebhook(secret, `Basic ${secret}`)).toBe(false);
+    expect(verifyBrevoWebhook(secret, `Digest ${secret}`)).toBe(false);
   });
 
-  it('rejects when no signature is provided', () => {
-    expect(verifyBrevoWebhook('{}', secret, null, null)).toBe(false);
+  it('rejects when no Authorization header is provided', () => {
+    expect(verifyBrevoWebhook(secret, null)).toBe(false);
   });
 });

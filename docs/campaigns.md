@@ -173,7 +173,8 @@ used to block this (`(list_id, email)` on `campaign_contacts` and
 
 ## Webhooks
 
-- **Brevo**: `POST /api/webhooks/brevo` — shared secret in URL or HMAC
-  header. Updates `campaign_recipients.status` per the precedence rules.
+- **Brevo**: `POST /api/webhooks/brevo` — Bearer token in `Authorization`
+  header (Brevo "Secured Webhooks", matches `BREVO_WEBHOOK_SECRET`).
+  Updates `campaign_recipients.status` per the precedence rules.
 - **Payzen**: `POST /api/webhooks/payzen` — HMAC-SHA256 on `kr-answer`.
   Closes payment cycles when an `Order/Get` reflects a paid state.
