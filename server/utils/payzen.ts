@@ -56,6 +56,17 @@ export interface PayzenConfig {
   password: string;
   hmacKey: string;
   returnUrl?: string;
+  /**
+   * Public webhook URL Lyra POSTs payment events to. Always set on the
+   * order to keep this integration independent from the Lyra back-office
+   * notification rules (which the public website uses).
+   */
+  ipnTargetUrl?: string;
+  /**
+   * Email that receives the payment receipt. Set per order to make sure
+   * accounting always gets a copy without touching back-office rules.
+   */
+  paymentReceiptEmail?: string;
 }
 
 export interface CreatePaymentLinkInput {
@@ -185,6 +196,8 @@ export async function createPaymentLink(
 
   if (input.expiresAt) body.expirationDate = input.expiresAt.toISOString();
   if (cfg.returnUrl) body.returnUrl = cfg.returnUrl;
+  if (cfg.ipnTargetUrl) body.ipnTargetUrl = cfg.ipnTargetUrl;
+  if (cfg.paymentReceiptEmail) body.paymentReceiptEmail = cfg.paymentReceiptEmail;
 
   interface ChannelDetails {
     channelType: string;

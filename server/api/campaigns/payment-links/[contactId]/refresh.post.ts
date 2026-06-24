@@ -21,6 +21,8 @@ export default defineEventHandler(async (event) => {
         password: config.payzen.password,
         hmacKey: config.payzen.hmacKey,
         returnUrl: config.payzen.returnUrl,
+        ipnTargetUrl: config.payzen.ipnTargetUrl,
+        paymentReceiptEmail: config.payzen.paymentReceiptEmail,
       }, link.id);
     } catch (err) {
       console.error('[payzen] refresh failed', { id: link.id, err });

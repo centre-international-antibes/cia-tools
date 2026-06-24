@@ -25,6 +25,8 @@ export default defineEventHandler(async (event) => {
     password: config.payzen.password,
     hmacKey: config.payzen.hmacKey,
     returnUrl: config.payzen.returnUrl,
+    ipnTargetUrl: config.payzen.ipnTargetUrl,
+    paymentReceiptEmail: config.payzen.paymentReceiptEmail,
   };
 
   const { data: cycles, error } = await client

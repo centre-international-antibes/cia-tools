@@ -103,6 +103,11 @@ export default defineNuxtConfig({
       password: process.env.PAYZEN_PASSWORD || '',
       hmacKey: process.env.PAYZEN_HMAC_KEY || '',
       returnUrl: process.env.PAYZEN_RETURN_URL || '',
+      ipnTargetUrl:
+        process.env.PAYZEN_IPN_TARGET_URL
+        || `${process.env.NUXT_PUBLIC_SITE_URL || ''}/api/webhooks/payzen`,
+      paymentReceiptEmail:
+        process.env.PAYZEN_PAYMENT_RECEIPT_EMAIL || 'compta@cia-france.com',
     },
     public: {
       ga4Id: process.env.GA4_ID || '',
