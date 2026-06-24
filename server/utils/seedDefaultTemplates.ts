@@ -119,11 +119,11 @@ async function seedOne(
 
   const { data: latest } = await client
     .from('email_template_versions')
-    .select('id, version, mjml')
+    .select('id, version, mjml, subject')
     .eq('id', existingTpl.current_version_id)
     .single();
 
-  if (latest && latest.mjml === tpl.mjml) {
+  if (latest && latest.mjml === tpl.mjml && latest.subject === tpl.subject) {
     return { action: 'skipped', reason: 'up to date' };
   }
 
