@@ -11,8 +11,9 @@ type PaymentLinkStatus = Database['public']['Enums']['payment_link_status'];
  * plus any operator-side delays. Explicit here so we don't rely on the
  * Lyra back-office default — the payment-reminder integration is fully
  * decoupled from the public-website shop config.
+ * MAX DURATION = 90 days, enforced by Payzen.
  */
-const PAYMENT_LINK_TTL_DAYS = 180;
+const PAYMENT_LINK_TTL_DAYS = 90;
 
 /**
  * Threshold under which we treat an existing link as "about to expire" and
