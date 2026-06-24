@@ -76,6 +76,17 @@ describe('parseContactsSheet — duplicate emails kept unconditionally', () => {
     expect(result.rows.map((r) => r.group_key)).toEqual(['111', '222']);
   });
 
+  it('accepts a file without the optional Id (client_id) column', () => {
+    const buf = buildXlsx(
+      ['Email', 'Nom', 'Solde', 'NomTo'],
+      [{ Email: 'p@x.com', Nom: 'NO ID', Solde: '441,00', NomTo: 'DIRECT 2' }],
+    );
+    const result = parseContactsSheet(buf, 'payment_reminder');
+    expect(result.warnings.some((w) => w.code === 'MISSING_COLUMNS')).toBe(false);
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].group_key).toBeNull();
+  });
+
   it('keeps even truly duplicate rows (no parser-side dedup)', () => {
     const buf = buildXlsx(
       ['Email', 'Nom', 'Id', 'Solde', 'NomTo'],

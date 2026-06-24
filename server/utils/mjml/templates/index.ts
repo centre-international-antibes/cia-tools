@@ -1,6 +1,8 @@
 import type { CampaignKind } from '~/types/campaign.types';
 import { ATS_TEMPLATES } from './ats';
 import { PAYMENT_REMINDER_TEMPLATES } from './paymentReminder';
+import { THANKS_DIRECT_TEMPLATES } from './thanksDirect';
+import { WELCOME_PACK_TEMPLATES } from './welcomePack';
 import { stubTemplate } from './stubs';
 import type { DefaultTemplate } from './types';
 
@@ -26,16 +28,7 @@ export const DEFAULT_TEMPLATES: Record<
       en: stubTemplate('en', 'CIA - Late arrival instructions', 'Instructions for your late arrival.'),
     },
   },
-  thanks_direct: {
-    junior: {
-      fr: stubTemplate('fr', 'CIA - Merci pour votre s\u00e9jour', 'Merci d\u2019avoir choisi le CIA.'),
-      en: stubTemplate('en', 'CIA - Thank you for your stay', 'Thank you for choosing CIA.'),
-    },
-    adult: {
-      fr: stubTemplate('fr', 'CIA - Merci pour votre s\u00e9jour', 'Merci d\u2019avoir choisi le CIA.'),
-      en: stubTemplate('en', 'CIA - Thank you for your stay', 'Thank you for choosing CIA.'),
-    },
-  },
+  thanks_direct: THANKS_DIRECT_TEMPLATES,
   test_fr: {
     default: {
       fr: stubTemplate('fr', 'CIA - Test de fran\u00e7ais en ligne', 'Votre test de niveau de fran\u00e7ais.'),
@@ -54,11 +47,6 @@ export const DEFAULT_TEMPLATES: Record<
       en: stubTemplate('en', 'CIA - Course location and schedule', 'Where and when your courses take place.'),
     },
   },
-  welcome_pack: {
-    default: {
-      fr: stubTemplate('fr', 'CIA - Bienvenue !', 'Bienvenue \u00e0 Antibes !'),
-      en: stubTemplate('en', 'CIA - Welcome!', 'Welcome to Antibes!'),
-    },
-  },
+  welcome_pack: WELCOME_PACK_TEMPLATES,
 };
 

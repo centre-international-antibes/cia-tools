@@ -698,7 +698,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
     descriptionKey: 'campaigns.kinds.payment_reminder.description',
     icon: 'lucide:credit-card',
     scope: 'campaign:payment_reminder',
-    requiredColumns: ['email', 'full_name', 'client_id', 'amount_due'],
+    requiredColumns: ['email', 'full_name', 'amount_due'],
     optionalColumns: [
       'language',
       'due_date',
