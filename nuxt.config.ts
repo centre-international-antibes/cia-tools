@@ -107,7 +107,7 @@ export default defineNuxtConfig({
         process.env.PAYZEN_IPN_TARGET_URL
         || `${process.env.NUXT_PUBLIC_SITE_URL || ''}/api/webhooks/payzen`,
       paymentReceiptEmail:
-        process.env.PAYZEN_PAYMENT_RECEIPT_EMAIL || 'compta@cia-france.com',
+        process.env.PAYZEN_PAYMENT_RECEIPT_EMAIL || 'direct5@cia-france.com',
     },
     public: {
       ga4Id: process.env.GA4_ID || '',
