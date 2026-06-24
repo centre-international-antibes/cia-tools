@@ -15,6 +15,7 @@ const f = EMAIL_TOKENS.font;
 const VARS = [
   { key: 'first_name', type: 'string', required: false, sample: 'Marie' },
   { key: 'last_name', type: 'string', required: false, sample: 'Dupont' },
+  { key: 'full_name', type: 'string', required: false, sample: 'DUPONT Marie' },
   { key: 'amount', type: 'string', required: true, sample: '450,00\u00a0\u20ac' },
   { key: 'payment_url', type: 'url', required: true, sample: 'https://pay.example' },
   { key: 'proforma', type: 'string', required: false, sample: 'P26404-B1E09' },
@@ -220,7 +221,7 @@ export const PAYMENT_REMINDER_TEMPLATES: Record<
 > = {
   first: {
     fr: {
-      subject: 'CIA - Solde \u00e0 r\u00e9gler',
+      subject: 'CIA - Solde \u00e0 r\u00e9gler - {{full_name}}',
       preheader: 'Solde restant pour votre s\u00e9jour au CIA.',
       mjml: wrapMjmlLayout({
         preheader: 'Solde restant pour votre s\u00e9jour au CIA.',
@@ -230,7 +231,7 @@ export const PAYMENT_REMINDER_TEMPLATES: Record<
       variables: [...VARS, ...VARS_BRAND],
     },
     en: {
-      subject: 'CIA - Balance due',
+      subject: 'CIA - Balance due - {{full_name}}',
       preheader: 'Remaining balance for your CIA stay.',
       mjml: wrapMjmlLayout({
         preheader: 'Remaining balance for your CIA stay.',
@@ -242,7 +243,7 @@ export const PAYMENT_REMINDER_TEMPLATES: Record<
   },
   second: {
     fr: {
-      subject: 'URGENT - CIA - Solde \u00e0 r\u00e9gler',
+      subject: 'URGENT - CIA - Solde \u00e0 r\u00e9gler - {{full_name}}',
       preheader: 'Rappel : votre paiement doit \u00eatre finalis\u00e9 sous 72 heures.',
       mjml: wrapMjmlLayout({
         preheader: 'Rappel : votre paiement doit \u00eatre finalis\u00e9 sous 72 heures.',
@@ -252,7 +253,7 @@ export const PAYMENT_REMINDER_TEMPLATES: Record<
       variables: [...VARS, ...VARS_BRAND],
     },
     en: {
-      subject: 'URGENT - CIA - Balance due',
+      subject: 'URGENT - CIA - Balance due - {{full_name}}',
       preheader: 'Reminder: your payment must be completed within 72 hours.',
       mjml: wrapMjmlLayout({
         preheader: 'Reminder: your payment must be completed within 72 hours.',
@@ -264,7 +265,7 @@ export const PAYMENT_REMINDER_TEMPLATES: Record<
   },
   third: {
     fr: {
-      subject: 'URGENT - CIA - Derni\u00e8re relance avant annulation',
+      subject: 'URGENT - CIA - Derni\u00e8re relance avant annulation - {{full_name}}',
       preheader: 'Derni\u00e8re relance avant annulation automatique de votre r\u00e9servation.',
       mjml: wrapMjmlLayout({
         preheader: 'Derni\u00e8re relance avant annulation automatique de votre r\u00e9servation.',
@@ -274,7 +275,7 @@ export const PAYMENT_REMINDER_TEMPLATES: Record<
       variables: [...VARS, ...VARS_BRAND],
     },
     en: {
-      subject: 'URGENT - CIA - Final reminder before cancellation',
+      subject: 'URGENT - CIA - Final reminder before cancellation - {{full_name}}',
       preheader: 'Final reminder before automatic cancellation of your reservation.',
       mjml: wrapMjmlLayout({
         preheader: 'Final reminder before automatic cancellation of your reservation.',

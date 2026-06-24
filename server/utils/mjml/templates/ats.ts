@@ -11,6 +11,7 @@ const f = EMAIL_TOKENS.font;
 const JUNIOR_VARS = [
   { key: 'first_name', type: 'string', required: false, sample: 'Marie' },
   { key: 'last_name', type: 'string', required: false, sample: 'Dupont' },
+  { key: 'full_name', type: 'string', required: false, sample: 'DUPONT Marie' },
   { key: 'no_ats_form', type: 'boolean', required: false, sample: true },
   { key: 'no_health_form', type: 'boolean', required: false, sample: true },
   { key: 'no_passport', type: 'boolean', required: false, sample: false },
@@ -21,6 +22,7 @@ const JUNIOR_VARS = [
 const ADULT_VARS = [
   { key: 'first_name', type: 'string', required: false, sample: 'Marie' },
   { key: 'last_name', type: 'string', required: false, sample: 'Dupont' },
+  { key: 'full_name', type: 'string', required: false, sample: 'DUPONT Marie' },
   { key: 'needs_transfer', type: 'boolean', required: false, sample: false },
   { key: 'is_family', type: 'boolean', required: false, sample: false },
   { key: 'is_residence', type: 'boolean', required: false, sample: true },
@@ -45,6 +47,7 @@ function juniorBody(language: 'fr' | 'en'): string {
       parentsId: 'Copie de la pi\u00e8ce d\u2019identit\u00e9 / passeport des parents',
       infoTitle: 'POUR VOTRE INFORMATION',
       preArrivalLabel: 'Document d\u2019informations pratiques avant arriv\u00e9e :',
+      alreadySent: 'Si vous avez d\u00e9j\u00e0 transmis ces documents, merci de ne pas tenir compte de ce message.',
       closing: 'Nous restons \u00e0 votre disposition pour toute information compl\u00e9mentaire.',
       preArrivalUrlWith: 'https://www.cia-france.com/media-file/900/documents-avant-arrivee-francais.pdf',
       preArrivalUrlWithout: 'https://www.cia-france.com/media-file/1748/documents-avant-arrivee-sans-hebergement.pdf',
@@ -61,6 +64,7 @@ function juniorBody(language: 'fr' | 'en'): string {
       parentsId: 'Parents\u2019 copy of ID / passport',
       infoTitle: 'FOR YOUR INFORMATION',
       preArrivalLabel: 'Pre-arrival information document:',
+      alreadySent: 'If you have already sent these documents, please disregard this email.',
       closing: 'We remain at your disposal for any further information.',
       preArrivalUrlWith: 'https://www.cia-france.com/media-file/901/pre-arrival-documents-english.pdf',
       preArrivalUrlWithout: 'https://www.cia-france.com/media-file/1749/pre-arrival-documents-without-accommodation.pdf',
@@ -114,6 +118,7 @@ function juniorBody(language: 'fr' | 'en'): string {
         ${paragraph(t.intro)}
         ${requiredSection}
         ${infoSection}
+        ${paragraph(`<em>${t.alreadySent}</em>`)}
         ${paragraph(t.closing)}
       </mj-column>
     </mj-section>
@@ -176,7 +181,7 @@ function adultBody(language: 'fr' | 'en'): string {
 export const ATS_TEMPLATES: Record<'junior' | 'adult', Record<'fr' | 'en', DefaultTemplate>> = {
   junior: {
     fr: {
-      subject: 'CIA - Documents avant arriv\u00e9e',
+      subject: 'CIA - Documents avant arriv\u00e9e - {{full_name}}',
       preheader: 'Documents \u00e0 nous transmettre avant l\u2019arriv\u00e9e de votre enfant.',
       mjml: wrapMjmlLayout({
         preheader: 'Documents \u00e0 nous transmettre avant l\u2019arriv\u00e9e de votre enfant.',
@@ -186,7 +191,7 @@ export const ATS_TEMPLATES: Record<'junior' | 'adult', Record<'fr' | 'en', Defau
       variables: [...JUNIOR_VARS],
     },
     en: {
-      subject: 'CIA - Pre-arrival documents',
+      subject: 'CIA - Pre-arrival documents - {{full_name}}',
       preheader: 'Documents we need before your child\u2019s arrival.',
       mjml: wrapMjmlLayout({
         preheader: 'Documents we need before your child\u2019s arrival.',
@@ -198,7 +203,7 @@ export const ATS_TEMPLATES: Record<'junior' | 'adult', Record<'fr' | 'en', Defau
   },
   adult: {
     fr: {
-      subject: 'CIA - Informations d\u2019arriv\u00e9e',
+      subject: 'CIA - Informations d\u2019arriv\u00e9e - {{full_name}}',
       preheader: 'Quelques informations encore avant votre arriv\u00e9e \u00e0 Antibes.',
       mjml: wrapMjmlLayout({
         preheader: 'Quelques informations encore avant votre arriv\u00e9e \u00e0 Antibes.',
@@ -208,7 +213,7 @@ export const ATS_TEMPLATES: Record<'junior' | 'adult', Record<'fr' | 'en', Defau
       variables: [...ADULT_VARS],
     },
     en: {
-      subject: 'CIA - Arrival details',
+      subject: 'CIA - Arrival details - {{full_name}}',
       preheader: 'A few details we need before your arrival in Antibes.',
       mjml: wrapMjmlLayout({
         preheader: 'A few details we need before your arrival in Antibes.',

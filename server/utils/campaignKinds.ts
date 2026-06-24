@@ -241,6 +241,7 @@ interface ServerKindConfig extends CampaignKindConfig {
 const COMMON_VARS: TemplateVariable[] = [
   { key: 'first_name', type: 'string', required: false, sample: 'Marie' },
   { key: 'last_name', type: 'string', required: false, sample: 'Dupont' },
+  { key: 'full_name', type: 'string', required: false, sample: 'DUPONT Marie' },
 ];
 
 // ── registry ────────────────────────────────────────────────────
@@ -367,6 +368,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       return {
         first_name: c.first_name,
         last_name: c.last_name,
+        full_name: asString(c.raw.full_name) || `${c.last_name} ${c.first_name}`.trim(),
         audience,
         no_ats_form: !!c.eligibility.no_ats_form,
         no_health_form: !!c.eligibility.no_health_form,
@@ -792,6 +794,7 @@ const REGISTRY: Record<CampaignKind, ServerKindConfig> = {
       return {
         first_name: c.first_name,
         last_name: c.last_name,
+        full_name: asString(c.raw.full_name) || `${c.last_name} ${c.first_name}`.trim(),
         amount: fmt(cents),
         amount_cents: cents,
         currency,
