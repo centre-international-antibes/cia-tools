@@ -66,7 +66,7 @@ describe('ATS template — junior', () => {
     expect(html).toContain('media-file/900/documents-avant-arrivee-francais.pdf');
     expect(html).toContain('Copie de la pi');
     expect(html).toContain('Fiche sanitaire');
-    expect(html).toContain('Copie du passeport');
+    expect(html).not.toContain('passeport de votre enfant');
     expect(html).toContain('Fiche ATS');
   });
 
@@ -87,6 +87,7 @@ describe('ATS template — junior', () => {
     expect(html).toContain('Dear parents');
     expect(html).toContain('media-file/1749/pre-arrival-documents-without-accommodation.pdf');
     expect(html).toContain('Health form');
+    expect(html).not.toContain('child\u2019s passport');
   });
 
   it('hides missing-doc list when nothing is missing', () => {
@@ -110,7 +111,7 @@ describe('ATS template — junior', () => {
 });
 
 describe('ATS template — adult', () => {
-  it('residence + transfer required + Aragon (EN)', () => {
+  it('residence + transfer required (EN) — no residence hours, no Aragon note', () => {
     const { variant, params } = buildAtsParams(
       {
         email: 'student@example.com',
@@ -123,14 +124,14 @@ describe('ATS template — adult', () => {
       'en',
     );
     expect(variant).toBe('adult');
-    expect(params.is_aragon).toBe(true);
     expect(params.needs_transfer).toBe(true);
     expect(params.is_residence).toBe(true);
     const html = render(ATS_TEMPLATES.adult.en.mjml, params, 'en');
     expect(html).toContain('Dear Student');
     expect(html).toContain('As transfer is required');
-    expect(html).toContain('Reception opening hours');
-    expect(html).toContain('Aragon');
+    expect(html).not.toContain('Reception opening hours');
+    expect(html).not.toContain('collect the key');
+    expect(html).not.toContain('Aragon');
   });
 
   it('family + no transfer (FR)', () => {

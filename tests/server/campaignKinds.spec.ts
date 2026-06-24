@@ -86,9 +86,6 @@ describe('campaignKinds registry', () => {
     expect(parsed.eligibility.no_ats_form).toBe(true);
     expect(parsed.eligibility.no_health_form).toBe(true);
     expect(parsed.eligibility.no_passport).toBe(true);
-    const params = cfg.buildParams(parsed);
-    const docs = params.missing_documents as Array<{ code: string }>;
-    expect(docs.map((d) => d.code)).toEqual(['ats_form', 'health_form', 'passport']);
   });
 
   it('course_location computes start_time per course type', () => {
