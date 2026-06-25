@@ -188,8 +188,9 @@ export async function createPaymentLink(
       email: input.customer.email,
       reference: input.customer.reference,
       billingDetails: {
-        firstName: input.customer.firstName,
-        lastName: input.customer.lastName,
+        // Wanted as team needs last name displayed first.
+        firstName: input.customer.lastName,
+        lastName: input.customer.firstName,
       },
     },
   };

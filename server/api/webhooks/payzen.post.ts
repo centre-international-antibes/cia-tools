@@ -9,12 +9,14 @@ import type { Database } from '~/types/database.types';
  *   - kr-answer-type       e.g. "V4/Payment"
  *   - kr-hash              HMAC over kr-answer
  *   - kr-hash-algorithm    must be "sha256_hmac"
- *   - kr-hash-key          "sha256_hmac" (single-key mode in V4 REST)
+ *   - kr-hash-key          "password" for server-to-server IPN (signed with
+ *                          PAYZEN_PASSWORD), "sha256_hmac" for browser-side
+ *                          return URL signatures (signed with PAYZEN_HMAC_KEY)
  *
- * We verify the signature against kr-answer using PAYZEN_HMAC_KEY, then
- * update the matching payment_link row. We always respond 200 once the
- * signature is valid so Lyra doesn't keep retrying — even when there's
- * no local row to update (logged for observability).
+ * We pick the verification key based on kr-hash-key, then update the matching
+ * payment_link row. We always respond 200 once the signature is valid so Lyra
+ * doesn't keep retrying — even when there's no local row to update (logged for
+ * observability).
  */
 export default defineEventHandler(async (event) => {
   const rawBody = await readRawBody(event, 'utf8');
@@ -24,6 +26,7 @@ export default defineEventHandler(async (event) => {
   const krAnswer = params.get('kr-answer');
   const krHash = params.get('kr-hash');
   const krAlgo = params.get('kr-hash-algorithm');
+  const krHashKey = params.get('kr-hash-key');
   if (!krAnswer || !krHash) {
     throw createError({ statusCode: 400, statusMessage: 'Missing kr-answer / kr-hash.' });
   }
@@ -35,7 +38,21 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig();
-  if (!verifyPayzenIpn(krAnswer, config.payzen.hmacKey, krHash)) {
+  // Server-to-server IPN: Lyra signs with the API password.
+  // Browser return URL: signed with the HMAC-SHA256 key.
+  // Absent: fall back to HMAC key for legacy/test payloads.
+  let verificationKey: string;
+  if (krHashKey === 'password') {
+    verificationKey = config.payzen.password;
+  } else if (krHashKey === 'sha256_hmac' || krHashKey === null) {
+    verificationKey = config.payzen.hmacKey;
+  } else {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Unsupported kr-hash-key: ${krHashKey}`,
+    });
+  }
+  if (!verifyPayzenIpn(krAnswer, verificationKey, krHash)) {
     throw createError({ statusCode: 401, statusMessage: 'Invalid signature.' });
   }
 

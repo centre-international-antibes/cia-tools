@@ -23,6 +23,16 @@ describe('verifyPayzenIpn', () => {
     expect(verifyPayzenIpn('{}', '', 'sig')).toBe(false);
     expect(verifyPayzenIpn('{}', 'k', null)).toBe(false);
   });
+
+  it('accepts an IPN signed with the API password (server-to-server mode)', () => {
+    // Lyra signs server IPNs with the production password when
+    // kr-hash-key=password, not with the HMAC key.
+    const password = 'prod_password_xyz';
+    const answer = '{"orderStatus":"PAID","orderDetails":{"orderId":"CIA-1"}}';
+    const sig = crypto.createHmac('sha256', password).update(answer).digest('hex');
+    expect(verifyPayzenIpn(answer, password, sig)).toBe(true);
+    expect(verifyPayzenIpn(answer, 'wrong_key', sig)).toBe(false);
+  });
 });
 
 describe('createPaymentLink', () => {
