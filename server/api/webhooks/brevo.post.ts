@@ -100,7 +100,8 @@ export default defineEventHandler(async (event) => {
     if (!mapped) continue;
 
     const messageId = (e['message-id'] ?? e.message_id ?? e.messageId ?? '') as string;
-    const recipientHeader = (e['X-CIA-Recipient'] ?? e.headers?.['X-CIA-Recipient']) as
+    const headers = (e.headers ?? {}) as Record<string, unknown>;
+    const recipientHeader = (e['X-CIA-Recipient'] ?? headers['X-CIA-Recipient']) as
       | string
       | undefined;
 

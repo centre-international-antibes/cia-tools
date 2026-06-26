@@ -66,7 +66,7 @@ async function seedOne(
   language: 'fr' | 'en',
   tpl: DefaultTemplate,
 ): Promise<{ action: 'created' | 'updated' | 'skipped'; reason?: string }> {
-  const compiled = compileMjml(tpl.mjml);
+  const compiled = await compileMjml(tpl.mjml);
   if (compiled.errors.length) {
     return { action: 'skipped', reason: `MJML errors: ${compiled.errors.join('; ')}` };
   }

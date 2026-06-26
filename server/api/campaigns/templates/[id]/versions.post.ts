@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: `Scope ${requiredScope} required.` });
   }
 
-  const compiled = compileMjml(body.mjml);
+  const compiled = await compileMjml(body.mjml);
   if (compiled.errors.length) {
     throw createError({
       statusCode: 400,

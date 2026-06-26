@@ -10,6 +10,11 @@ import { PayzenError, type PayzenConfig } from './payzen';
 
 const BATCH_SIZE = 50;
 const MAX_ATTEMPTS = 3;
+/** Max simultaneous in-flight recipient sends inside a single batch. */
+const CONCURRENCY = 5;
+/** Hard per-call timeouts; one slow upstream cannot freeze the whole run. */
+const BREVO_TIMEOUT_MS = 15_000;
+const PAYZEN_TIMEOUT_MS = 15_000;
 
 interface SendCtx {
   client: SupabaseClient<Database>;
@@ -23,15 +28,37 @@ interface SendCtx {
   brand: BrandContext;
 }
 
+/** Statuses that mean "there may still be work to do on this campaign". */
+const RESUMABLE_CAMPAIGN_STATUSES = ['queued', 'sending', 'partially_failed'] as const;
+
+async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>): Promise<void> {
+  const queue = items.slice();
+  const workers = Array.from({ length: Math.min(n, queue.length) }, async () => {
+    while (queue.length) {
+      const next = queue.shift();
+      if (next !== undefined) await fn(next);
+    }
+  });
+  await Promise.all(workers);
+}
+
 /**
  * Orchestrates the actual sending of a queued campaign.
  *
  * - Idempotent: only acts on recipients whose status is in ('pending', 'queued', 'failed').
  * - Resumable: if the process dies mid-batch, calling run() again picks up where it left off.
+ * - Time-bounded: stops cleanly between batches once `deadlineMs` is reached.
+ *   Leftover recipients stay in `queued`/`failed` for the next scheduler tick.
  * - Updates the parent campaign's aggregate counters at the end of each batch.
  */
-export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise<void> {
+export async function runCampaignSend(
+  ctx: SendCtx,
+  campaignId: string,
+  opts: { deadlineMs?: number } = {},
+): Promise<{ processed: number; hitDeadline: boolean }> {
   const { client } = ctx;
+  const deadlineMs = opts.deadlineMs ?? Number.POSITIVE_INFINITY;
+  const timeUp = () => Date.now() >= deadlineMs;
 
   // Lock the campaign for sending.
   const { data: campaign, error } = await client
@@ -41,7 +68,9 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
     .single();
 
   if (error || !campaign) throw new Error(`Campaign ${campaignId} not found.`);
-  if (campaign.status === 'aborted' || campaign.status === 'sent') return;
+  if (campaign.status === 'aborted' || campaign.status === 'sent') {
+    return { processed: 0, hitDeadline: false };
+  }
   if (!campaign.template_version_id) {
     throw new Error('Campaign has no template version assigned.');
   }
@@ -62,6 +91,7 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
     .single();
 
   if (!defaultVersion) throw new Error('Template version vanished mid-send.');
+  const defaultVer: NonNullable<typeof defaultVersion> = defaultVersion;
 
   const kindCfg = getKindConfig(campaign.kind);
 
@@ -72,8 +102,8 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
   const overrideVersionIds = Array.from(
     new Set(Object.values(overrideMap).filter((v): v is string => typeof v === 'string' && v.length > 0)),
   );
-  const versionsById = new Map<string, typeof defaultVersion>();
-  versionsById.set(defaultVersion.id, defaultVersion);
+  const versionsById = new Map<string, typeof defaultVer>();
+  versionsById.set(defaultVer.id, defaultVer);
   if (overrideVersionIds.length) {
     const { data: extraVersions } = await client
       .from('email_template_versions')
@@ -81,16 +111,21 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
       .in('id', overrideVersionIds);
     for (const v of extraVersions ?? []) versionsById.set(v.id, v);
   }
-  function pickVersion(variant: string | null): typeof defaultVersion {
+  function pickVersion(variant: string | null): typeof defaultVer {
     if (variant && overrideMap[variant]) {
       const v = versionsById.get(overrideMap[variant]);
       if (v) return v;
     }
-    return defaultVersion;
+    return defaultVer;
   }
 
   let processed = 0;
+  let hitDeadline = false;
   while (true) {
+    if (timeUp()) {
+      hitDeadline = true;
+      break;
+    }
     const { data: batch } = await client
       .from('campaign_recipients')
       .select('id, contact_id, email, params, status, attempts, variant')
@@ -102,7 +137,8 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
 
     if (!batch || batch.length === 0) break;
 
-    for (const recipient of batch) {
+    await pool(batch, CONCURRENCY, async (recipient) => {
+      if (timeUp()) return;
       processed += 1;
       try {
         let params = (recipient.params ?? {}) as Record<string, unknown>;
@@ -132,6 +168,7 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
             currency: String((contact.raw as Record<string, unknown>)?.currency ?? 'EUR'),
             language: contact.language === 'en' ? 'en' : 'fr',
             proforma,
+            payzenTimeoutMs: PAYZEN_TIMEOUT_MS,
           });
           params = { ...params, payment_url: link.paymentUrl };
         }
@@ -162,6 +199,7 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
             : undefined,
           tags: [`campaign:${campaign.kind}`, `campaign_id:${campaignId}`],
           headers: { 'X-CIA-Campaign': campaignId, 'X-CIA-Recipient': recipient.id },
+          timeoutMs: BREVO_TIMEOUT_MS,
         });
 
         await client
@@ -203,10 +241,16 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
           })
           .eq('id', recipient.id);
       }
-    }
+    });
 
     // Refresh aggregate counters.
     await refreshCampaignCounters(client, campaignId);
+  }
+
+  // Time ran out but there's still work — leave the campaign in `sending`
+  // so the next tick (or operator click) resumes it.
+  if (hitDeadline) {
+    return { processed, hitDeadline: true };
   }
 
   // Finalize.
@@ -244,7 +288,41 @@ export async function runCampaignSend(ctx: SendCtx, campaignId: string): Promise
     total,
   });
 
-  processed; // silence unused
+  return { processed, hitDeadline: false };
+}
+
+/**
+ * Drains every campaign that still has pending work, in FIFO order, until
+ * the deadline is reached or there is nothing left to do. Used by the
+ * scheduler endpoint and by the immediate post-queue kick.
+ */
+export async function runPendingCampaigns(
+  ctx: SendCtx,
+  opts: { deadlineMs: number; maxCampaigns?: number } = { deadlineMs: Date.now() + 50_000 },
+): Promise<{ campaigns: { id: string; processed: number; hitDeadline: boolean }[] }> {
+  const { client } = ctx;
+  const results: { id: string; processed: number; hitDeadline: boolean }[] = [];
+  const maxCampaigns = opts.maxCampaigns ?? 10;
+
+  const { data: due } = await client
+    .from('campaigns')
+    .select('id')
+    .in('status', [...RESUMABLE_CAMPAIGN_STATUSES])
+    .order('sent_at', { ascending: true, nullsFirst: true })
+    .limit(maxCampaigns);
+
+  for (const c of due ?? []) {
+    if (Date.now() >= opts.deadlineMs) break;
+    try {
+      const r = await runCampaignSend(ctx, c.id, { deadlineMs: opts.deadlineMs });
+      results.push({ id: c.id, ...r });
+    } catch (err) {
+      console.error('[runPendingCampaigns] failed', { campaignId: c.id, err });
+      results.push({ id: c.id, processed: 0, hitDeadline: false });
+    }
+  }
+
+  return { campaigns: results };
 }
 
 async function refreshCampaignCounters(

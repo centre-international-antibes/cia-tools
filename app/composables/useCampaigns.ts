@@ -152,11 +152,16 @@ export function useCampaigns() {
     list: (kind: CampaignKind) =>
       api<Campaign[]>('/api/campaigns', { query: { kind } }),
     get: (id: string) => api<Campaign>(`/api/campaigns/${id}`),
-    create: (body: { kind: CampaignKind; name: string; list_id: string; notes?: string }) =>
-      api<Campaign>('/api/campaigns', { method: 'POST', body }),
+    create: (body: {
+      kind: CampaignKind;
+      name: string;
+      list_id: string;
+      notes?: string;
+    }): Promise<Campaign> =>
+      api<Campaign>('/api/campaigns', { method: 'POST', body: body as Record<string, unknown> }),
     update: (
       id: string,
-      body: Partial<Campaign> & { template_overrides?: Record<string, string> },
+      body: Record<string, unknown> & { template_overrides?: Record<string, string> },
     ) => api<Campaign>(`/api/campaigns/${id}`, { method: 'PATCH', body }),
     remove: (id: string) =>
       api<{ success: boolean }>(`/api/campaigns/${id}`, { method: 'DELETE' }),
@@ -172,6 +177,14 @@ export function useCampaigns() {
       }),
     abort: (id: string) =>
       api<{ success: boolean }>(`/api/campaigns/${id}/abort`, { method: 'POST' }),
+    process: (id: string) =>
+      api<{ success: boolean; campaignId: string }>(`/api/campaigns/${id}/process`, {
+        method: 'POST',
+      }),
+    requeue: (id: string) =>
+      api<{ success: boolean; resetCount: number }>(`/api/campaigns/${id}/requeue`, {
+        method: 'POST',
+      }),
     recipients: (id: string, params?: { status?: string; limit?: number; offset?: number }) =>
       api<RecipientsPage>(`/api/campaigns/${id}/recipients`, { query: params }),
   };

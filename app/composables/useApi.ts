@@ -1,4 +1,9 @@
-import type { H3Event$Fetch } from 'nitropack/types';
+import type { $Fetch, FetchOptions } from 'ofetch';
+
+// Minimal call signature decouples consumers from Nitro's generated route
+// table, which on this project pushes TS past its recursion limit when
+// composed with deep DB row types (TS2589 / TS2321).
+type ApiFetch = <T>(request: string, opts?: FetchOptions) => Promise<T>;
 /**
  * Centralized HTTP client for the frontend.
  *
@@ -13,7 +18,13 @@ import type { H3Event$Fetch } from 'nitropack/types';
  * global `$fetch` in user-facing code.
  *
  * Must be invoked from a Vue setup context (component, composable, plugin).
+ *
+ * Typed as plain `$Fetch` rather than Nitro's `H3Event$Fetch` because the
+ * latter's route-table inference blows past TS's recursion limit on this
+ * project (TS2321 "excessive stack depth").
  */
-export function useApi(): H3Event$Fetch {
-  return useRequestFetch();
+export function useApi(): ApiFetch {
+  return useRequestFetch() as unknown as ApiFetch;
 }
+
+export type { $Fetch };

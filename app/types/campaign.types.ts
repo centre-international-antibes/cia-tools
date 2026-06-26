@@ -154,7 +154,7 @@ export interface CampaignKindConfig {
   /** Marks kinds whose params require an external API call (e.g. Payzen). */
   requiresPaymentLink?: boolean;
   /** Default variant resolver; runs in both server registry and UI. */
-  defaultVariant?: 'full' | 'light' | 'junior' | 'adult' | 'default';
+  defaultVariant?: string;
 }
 
 export type ContactWithEligibility = CampaignContact & {

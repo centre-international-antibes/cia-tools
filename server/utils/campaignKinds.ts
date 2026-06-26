@@ -119,7 +119,7 @@ function splitErpName(fullName: string): { first_name: string; last_name: string
   }
   if (!surnameTokens.length || !givenTokens.length) {
     // Couldn't classify — treat first token as last name (ERP default).
-    return { last_name: parts[0], first_name: parts.slice(1).join(' ') };
+    return { last_name: parts[0] ?? '', first_name: parts.slice(1).join(' ') };
   }
   return {
     last_name: surnameTokens.join(' '),

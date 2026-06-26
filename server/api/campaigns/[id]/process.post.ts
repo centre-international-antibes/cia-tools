@@ -1,21 +1,25 @@
-import { z } from 'zod';
 import { serverSupabaseServiceRole } from '#supabase/server';
 import type { Database } from '~/types/database.types';
 
-const schema = z.object({
-  client_request_id: z.string().uuid(),
-});
-
+/**
+ * Manual "retry pending sends" trigger for a single campaign.
+ *
+ * Reuses `runCampaignSend`, which only acts on rows in
+ * (pending, queued, failed) with attempts < MAX_ATTEMPTS. Safe to call
+ * repeatedly; idempotent against already-sent recipients.
+ *
+ * If recipients are stuck in `failed` (3 attempts exhausted), call
+ * `/api/campaigns/:id/requeue` first to reset them.
+ */
 export default defineEventHandler(async (event) => {
   const campaignId = getRouterParam(event, 'id');
   if (!campaignId) throw createError({ statusCode: 400, statusMessage: 'Missing id.' });
-  const body = schema.parse(await readBody(event));
 
   const { client, user, profile } = await requireAnyScope(event, [...CAMPAIGN_SCOPES]);
 
   const { data: campaign } = await client
     .from('campaigns')
-    .select('*')
+    .select('id, kind, status, template_version_id, total_recipients')
     .eq('id', campaignId)
     .single();
   if (!campaign) throw createError({ statusCode: 404, statusMessage: 'Not found.' });
@@ -25,38 +29,15 @@ export default defineEventHandler(async (event) => {
   if (!campaign.template_version_id) {
     throw createError({ statusCode: 400, statusMessage: 'Pick a template version first.' });
   }
-  if (campaign.total_recipients === 0) {
-    throw createError({ statusCode: 400, statusMessage: 'No recipients prepared.' });
-  }
-  if (!['draft', 'queued', 'partially_failed'].includes(campaign.status)) {
+  if (!['queued', 'sending', 'partially_failed'].includes(campaign.status)) {
     throw createError({
       statusCode: 409,
-      statusMessage: `Cannot send a campaign in status "${campaign.status}".`,
+      statusMessage: `Nothing to process for status "${campaign.status}".`,
     });
   }
 
-  // Idempotency: refuse to re-queue with a different client_request_id once one is set.
-  if (campaign.client_request_id && campaign.client_request_id !== body.client_request_id) {
-    throw createError({
-      statusCode: 409,
-      statusMessage: 'Campaign already queued with a different request id.',
-    });
-  }
+  await logAudit(client, user.sub, 'campaign.process', 'campaigns', campaignId, {});
 
-  const { error } = await client
-    .from('campaigns')
-    .update({
-      status: 'queued',
-      client_request_id: body.client_request_id,
-      sent_by: user.sub,
-    })
-    .eq('id', campaignId);
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message });
-
-  await logAudit(client, user.sub, 'campaign.queue', 'campaigns', campaignId, {});
-
-  // Fire-and-forget kick — the campaign is durably `queued` in Postgres so
-  // even if this in-process run dies, the scheduler will pick it up.
   const config = useRuntimeConfig();
   const serviceClient = serverSupabaseServiceRole<Database>(event);
   void runCampaignSend(
@@ -82,7 +63,7 @@ export default defineEventHandler(async (event) => {
     campaignId,
     { deadlineMs: Date.now() + 50_000 },
   ).catch((err) => {
-    console.error('[campaign-send] failed', { campaignId, err });
+    console.error('[campaign-process] failed', { campaignId, err });
   });
 
   return { success: true, campaignId };

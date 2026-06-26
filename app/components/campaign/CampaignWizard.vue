@@ -135,7 +135,8 @@ function inferPresentVariants(): string[] {
 
 function back() {
   const idx = currentIndex.value;
-  if (idx > 0) step.value = steps[idx - 1].id;
+  const prev = steps[idx - 1];
+  if (idx > 0 && prev) step.value = prev.id;
 }
 
 function onSent() {

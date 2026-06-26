@@ -158,7 +158,7 @@ const allPicked = computed(() =>
           </div>
           <Select
             :model-value="selection[variant] ?? ''"
-            @update:model-value="(v: string) => pickVariant(variant, v)"
+            @update:model-value="(v) => pickVariant(variant, String(v))"
           >
             <SelectTrigger :id="`tpl-${variant}`">
               <SelectValue :placeholder="t('campaigns.templates.pickPlaceholder')" />

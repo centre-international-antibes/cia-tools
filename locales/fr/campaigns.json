@@ -179,6 +179,16 @@
       "success": "Campagne annulée.",
       "error": "Impossible d'annuler la campagne."
     },
+    "process": {
+      "button": "Relancer les envois en attente",
+      "success": "Reprise des envois en cours.",
+      "error": "Impossible de relancer les envois."
+    },
+    "requeue": {
+      "button": "Réessayer les échecs",
+      "success": "{count} destinataire(s) remis en file.",
+      "error": "Impossible de remettre en file les échecs."
+    },
     "detail": {
       "sent": "envoyés",
       "failed": "échec(s)"

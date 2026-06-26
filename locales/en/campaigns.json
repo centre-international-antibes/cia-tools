@@ -181,6 +181,16 @@
       "success": "Campaign aborted.",
       "error": "Failed to abort campaign."
     },
+    "process": {
+      "button": "Retry pending sends",
+      "success": "Resuming pending sends.",
+      "error": "Failed to resume sends."
+    },
+    "requeue": {
+      "button": "Retry failed",
+      "success": "{count} recipient(s) requeued.",
+      "error": "Failed to requeue failed recipients."
+    },
     "detail": {
       "sent": "sent",
       "failed": "failed"

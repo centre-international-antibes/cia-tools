@@ -90,6 +90,7 @@ export default defineNuxtConfig({
   },
   // ── Runtime Config ────────────────────────────────────
   runtimeConfig: {
+    campaignProcessorSecret: process.env.CAMPAIGN_PROCESSOR_SECRET || '',
     brevo: {
       apiKey: process.env.BREVO_API_KEY || '',
       webhookSecret: process.env.BREVO_WEBHOOK_SECRET || '',

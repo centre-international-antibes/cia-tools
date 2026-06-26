@@ -184,6 +184,7 @@ export type Database = {
           sent_at: string | null
           status: Database["public"]["Enums"]["recipient_status"]
           updated_at: string
+          variant: string | null
         }
         Insert: {
           attempts?: number
@@ -199,6 +200,7 @@ export type Database = {
           sent_at?: string | null
           status?: Database["public"]["Enums"]["recipient_status"]
           updated_at?: string
+          variant?: string | null
         }
         Update: {
           attempts?: number
@@ -214,6 +216,7 @@ export type Database = {
           sent_at?: string | null
           status?: Database["public"]["Enums"]["recipient_status"]
           updated_at?: string
+          variant?: string | null
         }
         Relationships: [
           {
@@ -251,6 +254,7 @@ export type Database = {
           sent_count: number
           status: Database["public"]["Enums"]["campaign_status"]
           template_id: string | null
+          template_overrides: Json
           template_version_id: string | null
           total_recipients: number
           updated_at: string
@@ -273,6 +277,7 @@ export type Database = {
           sent_count?: number
           status?: Database["public"]["Enums"]["campaign_status"]
           template_id?: string | null
+          template_overrides?: Json
           template_version_id?: string | null
           total_recipients?: number
           updated_at?: string
@@ -295,6 +300,7 @@ export type Database = {
           sent_count?: number
           status?: Database["public"]["Enums"]["campaign_status"]
           template_id?: string | null
+          template_overrides?: Json
           template_version_id?: string | null
           total_recipients?: number
           updated_at?: string

@@ -37,12 +37,17 @@ async function throttle(): Promise<void> {
 async function brevoFetch<T>(
   apiKey: string,
   path: string,
-  init: RequestInit = {},
+  init: RequestInit & { timeoutMs?: number } = {},
 ): Promise<T> {
   await throttle();
 
+  const { timeoutMs, signal, ...rest } = init;
+  const finalSignal =
+    signal ?? (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined);
+
   const res = await fetch(`${BREVO_API_BASE}${path}`, {
-    ...init,
+    ...rest,
+    signal: finalSignal,
     headers: {
       'api-key': apiKey,
       'content-type': 'application/json',
@@ -87,6 +92,8 @@ export interface SendTransacEmailInput {
   tags?: string[];
   /** Used to suppress duplicate sends in case of retries. */
   messageId?: string;
+  /** Hard cap on the request; bounces with an AbortError on overrun. */
+  timeoutMs?: number;
 }
 
 export interface SendTransacEmailResult {
@@ -97,9 +104,11 @@ export async function sendTransacEmail(
   apiKey: string,
   input: SendTransacEmailInput,
 ): Promise<SendTransacEmailResult> {
+  const { timeoutMs, ...payload } = input;
   const result = await brevoFetch<{ messageId: string }>(apiKey, '/smtp/email', {
     method: 'POST',
-    body: JSON.stringify(input),
+    body: JSON.stringify(payload),
+    timeoutMs,
   });
   return { messageId: result.messageId };
 }

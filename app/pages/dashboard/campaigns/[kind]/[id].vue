@@ -16,6 +16,8 @@ const campaign = ref<Campaign | null>(null);
 const recipients = ref<CampaignRecipient[]>([]);
 const loading = ref(true);
 const aborting = ref(false);
+const processing = ref(false);
+const requeuing = ref(false);
 
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -57,8 +59,45 @@ async function abort() {
   }
 }
 
+async function retryPending() {
+  if (!campaign.value) return;
+  processing.value = true;
+  try {
+    await c.campaigns.process(id);
+    await load();
+    toast.success(t('campaigns.process.success'));
+  } catch (err) {
+    const e = extractApiError(err);
+    toast.error(t('campaigns.process.error'), { code: e.code, description: e.message });
+  } finally {
+    processing.value = false;
+  }
+}
+
+async function requeueFailed() {
+  if (!campaign.value) return;
+  requeuing.value = true;
+  try {
+    const res = await c.campaigns.requeue(id);
+    if (res.resetCount > 0) await c.campaigns.process(id);
+    await load();
+    toast.success(t('campaigns.requeue.success', { count: res.resetCount }));
+  } catch (err) {
+    const e = extractApiError(err);
+    toast.error(t('campaigns.requeue.error'), { code: e.code, description: e.message });
+  } finally {
+    requeuing.value = false;
+  }
+}
+
 const canAbort = computed(() =>
   ['queued', 'sending', 'partially_failed'].includes(campaign.value?.status ?? ''),
+);
+const canRetry = computed(() =>
+  ['queued', 'sending', 'partially_failed'].includes(campaign.value?.status ?? ''),
+);
+const canRequeue = computed(
+  () => (campaign.value?.failed_count ?? 0) > 0 && campaign.value?.status !== 'aborted',
 );
 </script>
 
@@ -86,6 +125,26 @@ const canAbort = computed(() =>
           </div>
         </div>
         <div class="flex gap-2">
+          <Button
+            v-if="canRetry"
+            variant="outline"
+            :disabled="processing"
+            @click="retryPending"
+          >
+            <Icon v-if="processing" name="lucide:loader-2" class="mr-2 size-4 animate-spin" />
+            <Icon v-else name="lucide:refresh-cw" class="mr-2 size-4" />
+            {{ t('campaigns.process.button') }}
+          </Button>
+          <Button
+            v-if="canRequeue"
+            variant="outline"
+            :disabled="requeuing"
+            @click="requeueFailed"
+          >
+            <Icon v-if="requeuing" name="lucide:loader-2" class="mr-2 size-4 animate-spin" />
+            <Icon v-else name="lucide:rotate-ccw" class="mr-2 size-4" />
+            {{ t('campaigns.requeue.button') }}
+          </Button>
           <Button
             v-if="canAbort"
             variant="destructive"

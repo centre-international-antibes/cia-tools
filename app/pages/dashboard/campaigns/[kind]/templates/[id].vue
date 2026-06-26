@@ -33,7 +33,7 @@ const loading = ref(true);
 async function load() {
   const detail = await c.templates.get(id);
   template.value = detail.template;
-  versions.value = detail.versions as VersionPreview[];
+  versions.value = detail.versions as unknown as VersionPreview[];
 
   if (detail.template.current_version_id) {
     latestVersion.value = await c.templates.getVersion(

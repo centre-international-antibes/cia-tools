@@ -94,6 +94,7 @@ async function payzenFetch<T>(
   cfg: PayzenConfig,
   endpoint: string,
   body: Record<string, unknown>,
+  opts: { timeoutMs?: number } = {},
 ): Promise<T> {
   if (!cfg.apiUrl || !cfg.username || !cfg.password) {
     throw new PayzenError('Payzen credentials are not configured.', 500, 'PAYZEN_NOT_CONFIGURED');
@@ -108,6 +109,7 @@ async function payzenFetch<T>(
       accept: 'application/json',
     },
     body: JSON.stringify(body),
+    signal: opts.timeoutMs ? AbortSignal.timeout(opts.timeoutMs) : undefined,
   });
 
   const text = await res.text();
@@ -175,6 +177,7 @@ async function payzenFetch<T>(
 export async function createPaymentLink(
   cfg: PayzenConfig,
   input: CreatePaymentLinkInput,
+  opts: { timeoutMs?: number } = {},
 ): Promise<CreatePaymentLinkResult> {
   const locale = input.language === 'en' ? 'en_GB' : 'fr_FR';
   const body: Record<string, unknown> = {
@@ -289,7 +292,7 @@ export async function createPaymentLink(
     _type: string;
   }
 
-  const answer = await payzenFetch<PaymentOrder>(cfg, '/Charge/CreatePaymentOrder', body);
+  const answer = await payzenFetch<PaymentOrder>(cfg, '/Charge/CreatePaymentOrder', body, opts);
   const url = answer.paymentURL ?? '';
 
   if (!url) {
@@ -319,6 +322,7 @@ export interface PayzenOrderStatus {
 export async function getOrderStatus(
   cfg: PayzenConfig,
   orderId: string,
+  opts: { timeoutMs?: number } = {},
 ): Promise<PayzenOrderStatus> {
   type Transaction = {
     status?: string;
@@ -327,7 +331,7 @@ export async function getOrderStatus(
   };
   type Answer = { transactions?: Transaction[] };
 
-  const answer = await payzenFetch<Answer>(cfg, '/Order/Get', { orderId });
+  const answer = await payzenFetch<Answer>(cfg, '/Order/Get', { orderId }, opts);
   const tx = answer.transactions?.[0];
   const upstream = (tx?.status ?? '').toUpperCase();
   const status: PayzenOrderStatus['status'] =

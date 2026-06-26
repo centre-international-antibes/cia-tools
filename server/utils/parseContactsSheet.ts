@@ -63,6 +63,13 @@ export function parseContactsSheet(
     };
   }
   const sheet = workbook.Sheets[sheetName];
+  if (!sheet) {
+    return {
+      rows: [],
+      warnings: [{ code: 'EMPTY_FILE', severity: 'error', message: 'Sheet vanished.' }],
+      summary: emptySummary,
+    };
+  }
   const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
     defval: '',
     raw: false,

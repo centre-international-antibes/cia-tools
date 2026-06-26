@@ -21,8 +21,8 @@ export interface MjmlCompileResult {
   errors: string[];
 }
 
-export function compileMjml(mjmlSource: string): MjmlCompileResult {
-  const result = mjml2html(mjmlSource, {
+export async function compileMjml(mjmlSource: string): Promise<MjmlCompileResult> {
+  const result = await mjml2html(mjmlSource, {
     validationLevel: 'soft',
     keepComments: false,
   });

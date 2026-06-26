@@ -53,11 +53,13 @@ export async function ensurePaymentLinkForContact(
     expiresAt?: Date;
     /** Reuse keys: same proforma + amount across reminders → same link. */
     proforma?: string | null;
+    /** Per-call timeout passed through to every Payzen HTTP request. */
+    payzenTimeoutMs?: number;
   },
 ): Promise<{ paymentUrl: string; orderId: string; status: PaymentLinkStatus }> {
   const existing = await findReusableLink(client, args.proforma ?? null, args.contactId);
 
-  if (existing && (await isReusable(client, cfg, existing, args.amountCents))) {
+  if (existing && (await isReusable(client, cfg, existing, args.amountCents, args.payzenTimeoutMs))) {
     return {
       paymentUrl: existing.payzen_payment_url!,
       orderId: existing.payzen_order_id,
@@ -69,19 +71,23 @@ export async function ensurePaymentLinkForContact(
   const expiresAt =
     args.expiresAt
     ?? new Date(Date.now() + PAYMENT_LINK_TTL_DAYS * 24 * 60 * 60 * 1000);
-  const result = await createPaymentLink(cfg, {
-    orderId,
-    amountCents: args.amountCents,
-    currency: args.currency,
-    customer: {
-      email: args.email,
-      firstName: args.firstName,
-      lastName: args.lastName,
-      reference: args.contactId,
+  const result = await createPaymentLink(
+    cfg,
+    {
+      orderId,
+      amountCents: args.amountCents,
+      currency: args.currency,
+      customer: {
+        email: args.email,
+        firstName: args.firstName,
+        lastName: args.lastName,
+        reference: args.contactId,
+      },
+      expiresAt,
+      language: args.language,
     },
-    expiresAt,
-    language: args.language,
-  });
+    { timeoutMs: args.payzenTimeoutMs },
+  );
 
   // Supersede any older open rows that share the same proforma so they can't
   // be returned by a future lookup. We don't touch rows whose Lyra-side
@@ -149,6 +155,7 @@ async function isReusable(
   cfg: PayzenConfig,
   link: PaymentLinkRow,
   requestedAmountCents: number,
+  timeoutMs?: number,
 ): Promise<boolean> {
   if (!link.payzen_payment_url) return false;
   if (link.amount_cents !== requestedAmountCents) return false;
@@ -161,7 +168,7 @@ async function isReusable(
   // We swallow the Payzen error and fall through to a fresh order: better
   // to mint a new link than to email a stale URL.
   try {
-    const live = await getOrderStatus(cfg, link.payzen_order_id);
+    const live = await getOrderStatus(cfg, link.payzen_order_id, { timeoutMs });
     const mapped: PaymentLinkStatus =
       live.status === 'paid'
         ? 'paid'
@@ -177,7 +184,7 @@ async function isReusable(
         .update({ status: mapped, paid_at: live.paidAt })
         .eq('id', link.id);
     }
-    return mapped === 'created' || mapped === 'pending';
+    return mapped === 'created';
   } catch (err) {
     console.warn('[paymentLinks] live status check failed; creating fresh order', {
       paymentLinkId: link.id,
