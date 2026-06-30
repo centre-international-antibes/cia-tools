@@ -67,7 +67,7 @@ export async function ensurePaymentLinkForContact(
     };
   }
 
-  const orderId = `CIA-${args.contactId.slice(0, 8)}-${Date.now()}`;
+  const orderId = `${args.lastName} ${args.firstName}`;
   const expiresAt =
     args.expiresAt
     ?? new Date(Date.now() + PAYMENT_LINK_TTL_DAYS * 24 * 60 * 60 * 1000);
