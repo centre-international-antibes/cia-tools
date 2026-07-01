@@ -89,7 +89,7 @@ function flagsList(e: EligibilityFlags): string[] {
   if (e.audience) out.push(e.audience);
   if (e.course_type) out.push(e.course_type);
   if (e.test_status && e.test_status !== 'pending') out.push(e.test_status);
-  if (e.reminder_count) out.push(`r${e.reminder_count}`);
+  if (e.reminder_count != null) out.push(`r${e.reminder_count + 1}`);
   if (e.client_type && !e.client_type.startsWith('DIRECT')) out.push(e.client_type);
   return out;
 }

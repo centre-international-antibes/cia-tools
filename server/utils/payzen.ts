@@ -57,7 +57,7 @@ export interface PayzenConfig {
   hmacKey: string;
   returnUrl?: string;
   /**
-   * Public webhook URL Lyra POSTs payment events to. Always set on the
+   * Public webhook URL Payzen/Lyra POSTs payment events to. Always set on the
    * order to keep this integration independent from the Lyra back-office
    * notification rules (which the public website uses).
    */
@@ -199,7 +199,15 @@ export async function createPaymentLink(
   };
 
   if (input.expiresAt) body.expirationDate = input.expiresAt.toISOString();
-  if (cfg.returnUrl) body.returnUrl = cfg.returnUrl;
+  if (cfg.returnUrl) {
+    const returnData = Buffer.from(JSON.stringify({
+      a: input.amountCents,
+      f: input.customer.firstName,
+      l: input.customer.lastName,
+      e: input.customer.email,
+    })).toString('base64url');
+    body.returnUrl = `${cfg.returnUrl}?d=${returnData}`;
+  }
   if (cfg.ipnTargetUrl) body.ipnTargetUrl = cfg.ipnTargetUrl;
   if (cfg.paymentReceiptEmail) body.paymentReceiptEmail = cfg.paymentReceiptEmail;
 

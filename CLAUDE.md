@@ -37,6 +37,13 @@ npm run generate:schema                    # regenerate types from Supabase
 npx supabase start | stop | db reset       # local DB lifecycle
 npx supabase migration new <name>          # create migration
 npx shadcn-vue@latest add <component>      # add UI primitive
+npm run seed:templates                     # seed default MJML templates (idempotent)
+
+# Payzen dev / maintenance
+node scripts/test-payzen-webhook.mjs [--order <id>] [--status PAID|EXPIRED|CANCELLED|REFUSED] [--use-password]
+                                           # simulate Payzen IPN against local dev server
+node scripts/update-payment-orders.mjs [--apply]
+                                           # one-shot: update open order IDs + receipt email (dry-run by default)
 ```
 
 ## Environment variables
@@ -89,6 +96,7 @@ Kind-specific logic (required columns, eligibility flags, default variant, param
 
 - **Layout & defaults**: shared MJML wrapper (`server/utils/mjml/layout.ts`), brand vars injected from `runtimeConfig.public.brand.*` at render time, default MJML templates under `server/utils/mjml/templates/`. Seed defaults into the DB via `npm run seed:templates` (idempotent; templates whose description starts with `[custom]` are skipped).
 - **Payment reminder cycles**: `payment_reminder_cycles` tracks one open cycle per proforma. `PaymentReminderUploader.vue` shows a proforma diff between previous and new uploads and exposes a "refresh Payzen statuses" action that closes paid cycles.
+- **Payment links**: `payment_links` table stores Payzen orders. `ensurePaymentLinkForContact()` in `server/utils/paymentLinks.ts` creates or reuses an order (5 reuse rules; re-polls Lyra live before reuse to defend against missed IPNs). Reuse key: `proforma` field stored in `raw` JSONB column. `orderId` format: `"${lastName} ${firstName} ${base36_ts}"` (max 64 chars; doubles as back-office display label). Lyra `billingDetails.firstName/lastName` are **intentionally swapped** so the back-office shows "LASTNAME Firstname". IPN at `POST /api/webhooks/payzen` (`application/x-www-form-urlencoded`): `kr-hash-key=password` → verify with `PAYZEN_PASSWORD`; `kr-hash-key=sha256_hmac` → verify with `PAYZEN_HMAC_KEY`.
 
 ## Conventions
 

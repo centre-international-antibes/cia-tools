@@ -67,7 +67,12 @@ export async function ensurePaymentLinkForContact(
     };
   }
 
-  const orderId = `${args.lastName} ${args.firstName}`;
+  // Payzen orderId doubles as the back-office display label (max 64 chars).
+  // Must be unique per DB constraint. Short timestamp suffix avoids collisions
+  // when the same contact gets multiple payment links across reminder cycles.
+  const suffix = Date.now().toString(36);
+  const namepart = `${args.lastName} ${args.firstName}`.slice(0, 64 - suffix.length - 1);
+  const orderId = `${namepart} ${suffix}`;
   const expiresAt =
     args.expiresAt
     ?? new Date(Date.now() + PAYMENT_LINK_TTL_DAYS * 24 * 60 * 60 * 1000);
