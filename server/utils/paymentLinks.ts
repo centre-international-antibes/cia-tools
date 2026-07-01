@@ -16,6 +16,17 @@ type PaymentLinkStatus = Database['public']['Enums']['payment_link_status'];
 const PAYMENT_LINK_TTL_DAYS = 90;
 
 /**
+ * Payzen orderId only tolerates plain ASCII. Strips diacritics (é → e) then
+ * drops anything left that isn't alphanumeric/space/hyphen.
+ */
+function sanitizeOrderIdPart(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9 -]/g, '');
+}
+
+/**
  * Threshold under which we treat an existing link as "about to expire" and
  * mint a fresh order instead of reusing it. Avoids handing customers a link
  * that may die mid-payment.
@@ -71,7 +82,10 @@ export async function ensurePaymentLinkForContact(
   // Must be unique per DB constraint. Short timestamp suffix avoids collisions
   // when the same contact gets multiple payment links across reminder cycles.
   const suffix = Date.now().toString(36);
-  const namepart = `${args.lastName} ${args.firstName}`.slice(0, 64 - suffix.length - 1);
+  const namepart = sanitizeOrderIdPart(`${args.lastName} ${args.firstName}`).slice(
+    0,
+    64 - suffix.length - 1,
+  );
   const orderId = `${namepart} ${suffix}`;
   const expiresAt =
     args.expiresAt
